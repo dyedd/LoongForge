@@ -34,4 +34,6 @@ PYTHONPATH="$MEGATRON_PATH:$LOONGFORGE_PATH:${PYTHONPATH:-}" \
   --save_ckpt_path="$MCORE_SAVE_PATH" \
   --safetensors \
   --max_workers="${MAX_WORKERS:-32}" \
-  --moe-grouped-gemm
+  --moe-grouped-gemm \
+  --hf-dequantize-mxfp4 \
+  --hf-dequantize-dtype bfloat16

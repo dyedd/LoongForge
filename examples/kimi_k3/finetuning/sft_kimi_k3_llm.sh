@@ -1,76 +1,151 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Copyright 2026 The LoongForge Authors.
 # SPDX-License-Identifier: Apache-2.0
-set -euo pipefail
 
 export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1
-export LOONGFORGE_PATH=${LOONGFORGE_PATH:-/workspace/LoongForge}
-MODEL_CONFIG_FILE=${MODEL_CONFIG_FILE:-"$LOONGFORGE_PATH/configs/models/kimi_k3/kimi_k3_backbone.yaml"}
-DATA_PATH=${DATA_PATH:?Set DATA_PATH to an OpenAI-format JSON or JSONL dataset}
-TOKENIZER_PATH=${TOKENIZER_PATH:?Set TOKENIZER_PATH to the Kimi K3 tokenizer}
-CHECKPOINT_PATH=${CHECKPOINT_PATH:?Set CHECKPOINT_PATH to a language-only MCore checkpoint}
-CHECKPOINT_SAVE_PATH=${CHECKPOINT_SAVE_PATH:-$CHECKPOINT_PATH}
 
-GPUS_PER_NODE=${GPUS_PER_NODE:-8}
-NNODES=${WORLD_SIZE:-1}
-NODE_RANK=${RANK:-0}
-MASTER_ADDR=${MASTER_ADDR:-localhost}
-MASTER_PORT=${MASTER_PORT:-6000}
+MEGATRON_PATH=${MEGATRON_PATH:-"/workspace/Loong-Megatron"}
+export LOONGFORGE_PATH=${LOONGFORGE_PATH:-"/workspace/LoongForge"}
 
-export FLA_TILELANG="${FLA_TILELANG:-0}"
+DATA_PATH=${DATA_PATH:-"/mnt/cluster/LoongForge/dataset/sft_aplaca_zh_data.json"}
+DATASET_CONFIG_PATH=${DATASET_CONFIG_PATH:-"${LOONGFORGE_PATH}/configs/data/sft_dataset_config.yaml"}
+TOKENIZER_PATH=${TOKENIZER_PATH:-"/mnt/cluster/huggingface.co/Kimi-K3"}
+CHECKPOINT_PATH=${CHECKPOINT_PATH:-"/mnt/cluster/LoongForge/kimi_k3/kimi_k3-llm-tp8pp8ep32etp1"}
+CHECKPOINT_PATH_SAVE=${CHECKPOINT_PATH_SAVE:-"/mnt/cluster/LoongForge/kimi_k3/save/sft/kimi_k3-llm-tp8pp8ep32etp1"}
+TENSORBOARD_PATH=${TENSORBOARD_PATH:-"/mnt/cluster/LoongForge/tensorboard-log/kimi_k3_llm_sft"}
 
-OPTIMIZER_ARGS=(--use-distributed-optimizer)
-if [[ "${OPTIMIZER_CPU_OFFLOAD:-0}" == 1 ]]; then
-  OPTIMIZER_ARGS+=(
-    --optimizer-cpu-offload
-    --optimizer-offload-fraction "${OPTIMIZER_OFFLOAD_FRACTION:-1.0}"
-    --use-precision-aware-optimizer
+GPUS_PER_NODE=8
+
+export NCCL_SOCKET_IFNAME=bond0
+export NCCL_IB_GID_INDEX=3
+export NVSHMEM_HCA_LIST=mlx5_2,mlx5_3,mlx5_4,mlx5_5,mlx5_6,mlx5_7,mlx5_8,mlx5_9
+export NVSHMEM_BOOTSTRAP_UID_SOCK_IFNAME=bond0
+export NVSHMEM_BOOTSTRAP_UID_SOCK_FAMILY=AF_INET
+export NVSHMEM_IB_GID_INDEX=3
+
+export NVTE_FWD_LAYERNORM_SM_MARGIN=8
+export NVTE_BWD_LAYERNORM_SM_MARGIN=24
+export NVTE_ALLOW_NONDETERMINISTIC_ALGO=1
+
+export CUDA_DEVICE_MAX_CONNECTIONS=1
+export TORCH_NCCL_AVOID_RECORD_STREAMS=1
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+# KDA uses the Triton fallback when TileLang/TVM is unavailable.
+export FLA_TILELANG=${FLA_TILELANG:-0}
+
+MASTER_ADDR=${MASTER_ADDR:-"localhost"}
+MASTER_PORT=${MASTER_PORT:-"5000"}
+NNODES=${WORLD_SIZE:-"1"}
+NODE_RANK=${RANK:-"0"}
+
+DISTRIBUTED_ARGS=(
+  --nproc_per_node $GPUS_PER_NODE
+  --nnodes $NNODES
+  --node_rank $NODE_RANK
+  --master_addr $MASTER_ADDR
+  --master_port $MASTER_PORT
+)
+
+MODEL_CONFIG_FILE=${MODEL_CONFIG_FILE:-${LOONGFORGE_PATH}/configs/models/kimi_k3/kimi_k3_backbone.yaml}
+MODEL_CONFIG_ARGS=(
+  --config-file $MODEL_CONFIG_FILE
+)
+
+DATA_ARGS=(
+  --tokenizer-type HFTokenizer
+  --hf-tokenizer-path $TOKENIZER_PATH
+  --data-path $DATA_PATH
+  --split 100,0,0
+  --chat-template kimi-k3-hf
+  --sft-dataset openai
+  --sft-dataset-config $DATASET_CONFIG_PATH
+  --sft-num-preprocess-workers 16
+)
+
+TRAINING_ARGS=(
+  --training-phase sft
+  --seq-length 32768
+  --max-position-embeddings 1048576
+  --init-method-std 0.02
+  --no-masked-softmax-fusion
+  --micro-batch-size 1
+  --global-batch-size 128
+  --lr 1e-6
+  --train-iters 1500
+  --lr-decay-iters 1500
+  --lr-decay-style cosine
+  --min-lr 1e-7
+  --weight-decay 0.1
+  --lr-warmup-fraction 0.002
+  --clip-grad 1.0
+  --bf16
+  --load $CHECKPOINT_PATH
+  --save $CHECKPOINT_PATH_SAVE
+  --save-interval 100
+  --eval-interval 30
+  --eval-iters 0
+  --no-load-optim
+  --no-load-rng
+  --recompute-granularity full
+  --recompute-method block
+  --distributed-timeout-minutes 60
+  --enable-experimental
+)
+
+MOE_ARGS=(
+  --moe-router-topk 16
+  --moe-grouped-gemm
+  --moe-router-enable-expert-bias
+  --moe-router-pre-softmax
+  --moe-router-bias-update-rate 0.0
+  --moe-router-num-groups 1
+  --moe-router-group-topk 1
+  --moe-router-score-function sigmoid
+  --moe-router-dtype fp32
+  --empty-unused-memory-level 2
+)
+
+MODEL_PARALLEL_ARGS=(
+  --tensor-model-parallel-size 8
+  --pipeline-model-parallel-size 8
+  --context-parallel-size 1
+  --expert-model-parallel-size 32
+  --expert-tensor-parallel-size 1
+  --sequence-parallel
+  --moe-token-dispatcher-type alltoall
+  --use-precision-aware-optimizer
+  --exp-avg-dtype bf16
+  --exp-avg-sq-dtype bf16
+  --use-distributed-optimizer
+  --moe-permute-fusion
+  --cross-entropy-loss-fusion
+  --overlap-grad-reduce
+  --overlap-param-gather
+)
+
+LOGGING_ARGS=(
+  --log-interval 1
+  --tensorboard-dir ${TENSORBOARD_PATH}
+  --log-timers-to-tensorboard
+  --log-memory-to-tensorboard
+  --log-validation-ppl-to-tensorboard
+)
+
+if [ -n "${WANDB_API_KEY:-}" ]; then
+  LOGGING_ARGS+=(
+    --wandb-project ${WANDB_PROJECT}
+    --wandb-exp-name ${WANDB_NAME}
   )
 fi
 
-torchrun \
-  --nproc_per_node="$GPUS_PER_NODE" \
-  --nnodes="$NNODES" \
-  --node_rank="$NODE_RANK" \
-  --master_addr="$MASTER_ADDR" \
-  --master_port="$MASTER_PORT" \
-  "$LOONGFORGE_PATH/loongforge/train.py" \
-  --config-file "$MODEL_CONFIG_FILE" \
-  --tokenizer-type HFTokenizer \
-  --hf-tokenizer-path "$TOKENIZER_PATH" \
-  --data-path "$DATA_PATH" \
-  --split 100,0,0 \
-  --training-phase sft \
-  --chat-template kimi-k3-hf \
-  --sft-dataset openai \
-  --sft-dataset-config "$LOONGFORGE_PATH/configs/data/sft_dataset_config.yaml" \
-  --sft-num-preprocess-workers "${SFT_WORKERS:-16}" \
-  --seq-length "${SEQ_LENGTH:-32768}" \
-  --max-position-embeddings "${MAX_POSITION_EMBEDDINGS:-1048576}" \
-  --micro-batch-size "${MICRO_BATCH_SIZE:-1}" \
-  --global-batch-size "${GLOBAL_BATCH_SIZE:-128}" \
-  --train-iters "${TRAIN_ITERS:-1500}" \
-  --lr "${LR:-1e-6}" \
-  --min-lr "${MIN_LR:-1e-7}" \
-  --lr-decay-style cosine \
-  --weight-decay 0.1 \
-  --clip-grad 1.0 \
-  --bf16 \
-  --load "$CHECKPOINT_PATH" \
-  --save "$CHECKPOINT_SAVE_PATH" \
-  --save-interval "${SAVE_INTERVAL:-100}" \
-  --eval-interval "${EVAL_INTERVAL:-30}" \
-  --eval-iters "${EVAL_ITERS:-0}" \
-  --log-interval "${LOG_INTERVAL:-1}" \
-  --no-load-optim \
-  --no-load-rng \
-  --moe-grouped-gemm \
-  --tensor-model-parallel-size "${TP:-1}" \
-  --pipeline-model-parallel-size "${PP:-1}" \
-  --context-parallel-size 1 \
-  --expert-model-parallel-size "${EP:-8}" \
-  --expert-tensor-parallel-size "${ETP:-1}" \
-  --moe-token-dispatcher-type alltoall \
-  --empty-unused-memory-level "${EMPTY_UNUSED_MEMORY_LEVEL:-0}" \
-  "${OPTIMIZER_ARGS[@]}" \
+PYTHONPATH=$MEGATRON_PATH:$LOONGFORGE_PATH:$PYTHONPATH \
+  torchrun ${DISTRIBUTED_ARGS[@]} \
+  $LOONGFORGE_PATH/loongforge/train.py \
+  ${MODEL_CONFIG_ARGS[@]} \
+  ${DATA_ARGS[@]} \
+  ${TRAINING_ARGS[@]} \
+  ${MOE_ARGS[@]} \
+  ${MODEL_PARALLEL_ARGS[@]} \
+  ${LOGGING_ARGS[@]} \
   model_type=kimi_k3_llm

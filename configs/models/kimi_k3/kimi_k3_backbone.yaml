@@ -51,6 +51,8 @@ add_bias_linear: false
 add_qkv_bias: false
 qk_layernorm: true
 gated_linear_unit: true
+activation_situ_beta: 4.0
+activation_situ_linear_beta: 25.0
 untie_embeddings_and_output_weights: true
 vocab_size_in_config_file: 163840
 make_vocab_size_divisible_by: 128

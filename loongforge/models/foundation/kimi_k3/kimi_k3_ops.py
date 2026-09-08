@@ -9,10 +9,7 @@ from functools import cache
 
 import torch
 from torch import nn
-
-# K3's SiTU shape parameters (HF: activation_situ_beta, activation_situ_linear_beta).
-SITU_BETA = 4.0
-SITU_LINEAR_BETA = 25.0
+from megatron.legacy.model.rms_norm import RMSNorm
 
 
 def kda(
@@ -55,11 +52,16 @@ def kda(
     return output
 
 
-def situ_and_mul(inputs: torch.Tensor) -> torch.Tensor:
+def situ_and_mul(
+    inputs: torch.Tensor,
+    beta: float,
+    linear_beta: float | None,
+) -> torch.Tensor:
     """Apply K3's SiTU gated activation to a fused gate/up projection."""
     gate, linear = torch.chunk(inputs.float(), 2, dim=-1)
-    gate = SITU_BETA * torch.tanh(gate / SITU_BETA) * torch.sigmoid(gate)
-    linear = SITU_LINEAR_BETA * torch.tanh(linear / SITU_LINEAR_BETA)
+    gate = beta * torch.tanh(gate / beta) * torch.sigmoid(gate)
+    if linear_beta is not None:
+        linear = linear_beta * torch.tanh(linear / linear_beta)
     return (gate * linear).to(inputs.dtype)
 
 
@@ -68,38 +70,18 @@ class SiTUAndMul(nn.Module):
 
     def __init__(self, config) -> None:
         super().__init__()
+        self.beta = config.activation_situ_beta
+        self.linear_beta = config.activation_situ_linear_beta
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """Apply SiTU to a fused gate/up projection."""
-        return situ_and_mul(inputs)
-
-
-class KimiRMSNorm(nn.Module):
-    """Kimi's FP32-accumulating RMS normalization."""
-
-    def __init__(
-        self,
-        hidden_size: int,
-        eps: float,
-        device: torch.device | int | None = None,
-        dtype: torch.dtype | None = None,
-    ) -> None:
-        super().__init__()
-        self.weight = nn.Parameter(torch.ones(hidden_size, device=device, dtype=dtype))
-        self.eps = eps
-
-    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
-        """Normalize the final dimension with FP32 accumulation."""
-        input_dtype = hidden_states.dtype
-        normalized = hidden_states.float()
-        normalized = normalized * torch.rsqrt(normalized.square().mean(dim=-1, keepdim=True) + self.eps)
-        return self.weight * normalized.to(input_dtype)
+        return situ_and_mul(inputs, self.beta, self.linear_beta)
 
 
 def attn_res_aggregate(
     prefix_sum: torch.Tensor,
     block_residual: torch.Tensor,
-    score_norm: KimiRMSNorm,
+    score_norm: RMSNorm,
     score_proj: nn.Linear,
     output_norm: nn.Module | None = None,
 ) -> torch.Tensor:
@@ -140,7 +122,7 @@ def _drop_broken_hopper_autotune() -> None:
 
 
 __all__ = [
-    "KimiRMSNorm",
+    "RMSNorm",
     "SiTUAndMul",
     "attn_res_aggregate",
     "kda",

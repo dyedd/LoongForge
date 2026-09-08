@@ -9,7 +9,7 @@ import torch
 from megatron.core.extensions.transformer_engine import TELinear
 from megatron.core.transformer.moe.moe_layer import MoELayer
 
-from .kimi_k3_ops import KimiRMSNorm, sum_grads_across_tp
+from .kimi_k3_ops import RMSNorm, sum_grads_across_tp
 
 
 class KimiK3MoELayer(MoELayer):
@@ -27,11 +27,8 @@ class KimiK3MoELayer(MoELayer):
         self.fc2_latent_proj = self._latent_linear(
             latent_size, self.config.hidden_size, self.config.output_layer_init_method
         )
-        self.routed_expert_norm = KimiRMSNorm(
-            latent_size,
-            self.config.layernorm_epsilon,
-            device=torch.cuda.current_device(),
-            dtype=self.config.params_dtype,
+        self.routed_expert_norm = RMSNorm(latent_size, self.config.layernorm_epsilon).to(
+            device=torch.cuda.current_device(), dtype=self.config.params_dtype
         )
         sum_grads_across_tp(self.routed_expert_norm)
 

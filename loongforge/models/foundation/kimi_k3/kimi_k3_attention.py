@@ -34,7 +34,7 @@ from megatron.core.transformer.utils import (
 )
 from torch import nn
 
-from .kimi_k3_ops import KimiRMSNorm, kda, sum_grads_across_tp
+from .kimi_k3_ops import RMSNorm, kda, sum_grads_across_tp
 
 
 def _linear(module: nn.Module, inputs: torch.Tensor) -> torch.Tensor:
@@ -226,8 +226,8 @@ class KimiK3Attention(MegatronModule):
         self.q_head_dim = self.qk_nope_head_dim + self.qk_extra_head_dim
 
         self.q_a_proj = self._duplicated_linear(hidden_size, self.q_lora_rank)
-        self.q_a_layernorm = KimiRMSNorm(
-            self.q_lora_rank, config.layernorm_epsilon, device=device, dtype=dtype
+        self.q_a_layernorm = RMSNorm(self.q_lora_rank, config.layernorm_epsilon).to(
+            device=device, dtype=dtype
         )
         self.q_b_proj = self._column_linear(
             self.q_lora_rank, self.num_heads * self.q_head_dim
@@ -235,8 +235,8 @@ class KimiK3Attention(MegatronModule):
         self.kv_a_proj_with_mqa = self._duplicated_linear(
             hidden_size, self.kv_lora_rank + self.qk_extra_head_dim
         )
-        self.kv_a_layernorm = KimiRMSNorm(
-            self.kv_lora_rank, config.layernorm_epsilon, device=device, dtype=dtype
+        self.kv_a_layernorm = RMSNorm(self.kv_lora_rank, config.layernorm_epsilon).to(
+            device=device, dtype=dtype
         )
         self.kv_b_proj = self._column_linear(
             self.kv_lora_rank,

@@ -61,6 +61,8 @@ class KimiK3Config(BaseModelMLAConfig):
     add_qkv_bias: bool = False
     qk_layernorm: bool = True
     gated_linear_unit: bool = True
+    activation_situ_beta: float = 4.0
+    activation_situ_linear_beta: Optional[float] = 25.0
     untie_embeddings_and_output_weights: bool = True
     vocab_size_in_config_file: int = 0
     make_vocab_size_divisible_by: int = 128

@@ -15,7 +15,7 @@ from megatron.core.transformer.transformer_layer import (
 )
 from torch import nn
 
-from .kimi_k3_ops import KimiRMSNorm, attn_res_aggregate, sum_grads_across_tp
+from .kimi_k3_ops import RMSNorm, attn_res_aggregate, sum_grads_across_tp
 from .kimi_k3_pipeline import bank_num_rows, pack_stage_boundary, unpack_stage_boundary
 
 
@@ -48,11 +48,11 @@ class KimiK3TransformerLayer(TransformerLayer):
             layer_idx + 1 == stage_end and stage_end < self.config.num_layers
         )
 
-    def _score_pair(self) -> tuple[KimiRMSNorm, nn.Linear]:
+    def _score_pair(self) -> tuple[RMSNorm, nn.Linear]:
         """Build one AttnRes scoring head: an RMSNorm and a rank-1 projection."""
         hidden_size = self.config.hidden_size
         kwargs = {"device": torch.cuda.current_device(), "dtype": self.config.params_dtype}
-        norm = KimiRMSNorm(hidden_size, self.config.layernorm_epsilon, **kwargs)
+        norm = RMSNorm(hidden_size, self.config.layernorm_epsilon).to(**kwargs)
         proj = nn.Linear(hidden_size, 1, bias=False, **kwargs)
         sum_grads_across_tp(norm)
         sum_grads_across_tp(proj)

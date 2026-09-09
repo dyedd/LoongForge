@@ -57,6 +57,7 @@ DATA_ARGS=(
   --hf-tokenizer-path $TOKENIZER_PATH
   --data-path $DATA_PATH
   --dataloader-type external
+  --no-create-attention-mask-in-dataloader
   --split 99990,8,2
   --add-question-in-pretrain
   --enable-discard-sample

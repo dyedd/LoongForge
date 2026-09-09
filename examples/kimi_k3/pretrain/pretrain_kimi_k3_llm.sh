@@ -55,6 +55,7 @@ DATA_ARGS=(
   --tokenizer-type HFTokenizer
   --hf-tokenizer-path $TOKENIZER_PATH
   --data-path $DATA_PATH
+  --no-create-attention-mask-in-dataloader
   --split 99990,8,2
 )
 

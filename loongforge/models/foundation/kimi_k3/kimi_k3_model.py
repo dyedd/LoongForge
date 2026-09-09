@@ -33,6 +33,13 @@ class KimiK3Model(BaseGPTModel):
 
     config_class = KimiK3Config
 
+    def sharded_state_dict(self, prefix="", sharded_offsets=(), metadata=None):
+        """Propagate K3's process groups through the generic checkpoint walk."""
+        metadata = dict(metadata or {})
+        metadata.setdefault("tp_group", self.pg_collection.tp)
+        metadata.setdefault("dp_cp_group", self.pg_collection.dp_cp)
+        return super().sharded_state_dict(prefix, sharded_offsets, metadata)
+
     def __init__(
         self,
         config: KimiK3Config,

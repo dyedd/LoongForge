@@ -54,7 +54,8 @@ class KimiK3ShortConvolution(ShortConvolution):
     dtype when ``Float16Module`` wraps it.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, tp_group=None, **kwargs) -> None:
+        self.tp_group = tp_group
         super().__init__(*args, **kwargs)
         self.weight.data = self.weight.data.float()
         set_tensor_model_parallel_attributes(self.weight, True, 0, 1)
@@ -72,6 +73,7 @@ class KimiK3ShortConvolution(ShortConvolution):
             prefix,
             {"weight": 0},
             sharded_offsets,
+            tp_group=self.tp_group,
             dp_cp_group=metadata["dp_cp_group"],
         )
 
@@ -177,6 +179,7 @@ class KimiK3Attention(MegatronModule):
             "activation": "silu",
             "device": device,
             "dtype": dtype,
+            "tp_group": self.tp_group,
         }
         self.q_conv1d = KimiK3ShortConvolution(**conv_kwargs)
         self.k_conv1d = KimiK3ShortConvolution(**conv_kwargs)

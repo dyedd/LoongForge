@@ -197,6 +197,8 @@ class KimiK3Attention(MegatronModule):
         self.dt_bias = nn.Parameter(
             torch.empty(self.local_projection_size, dtype=torch.float32, device=device)
         )
+        self.A_log._keep_in_float32 = True
+        self.dt_bias._keep_in_float32 = True
         set_tensor_model_parallel_attributes(self.A_log, True, 0, 1)
         set_tensor_model_parallel_attributes(self.dt_bias, True, 0, 1)
 

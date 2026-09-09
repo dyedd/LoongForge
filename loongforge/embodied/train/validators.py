@@ -15,6 +15,54 @@ import os
 logger = logging.getLogger(__name__)
 
 
+def _validate_fsdp_ignored_frozen_args(training_args):
+    """Reject unsupported frozen-parameter replication combinations."""
+    if (
+        training_args.fsdp_ignored_frozen_param_dtype is not None
+        and not training_args.fsdp_ignore_frozen_module_classes
+    ):
+        raise ValueError(
+            "--fsdp-ignored-frozen-param-dtype requires "
+            "--fsdp-ignore-frozen-module-classes"
+        )
+    if not training_args.fsdp_ignore_frozen_module_classes:
+        return
+    if training_args.distributed_strategy != "fsdp":
+        raise ValueError(
+            "--fsdp-ignore-frozen-module-classes requires "
+            "--distributed-strategy fsdp"
+        )
+    if training_args.init_on_meta:
+        raise ValueError(
+            "--fsdp-ignore-frozen-module-classes is incompatible with "
+            "--init-on-meta because ignored meta parameters cannot be "
+            "materialized generically"
+        )
+    if training_args.fsdp_ignored_frozen_param_dtype is not None:
+        dtype_aliases = {
+            "fp32": "float32",
+            "float32": "float32",
+            "bf16": "bfloat16",
+            "bfloat16": "bfloat16",
+            "fp16": "float16",
+            "float16": "float16",
+        }
+        ignored_dtype = dtype_aliases.get(
+            training_args.fsdp_ignored_frozen_param_dtype
+        )
+        compute_dtype = dtype_aliases.get(training_args.dtype)
+        if (
+            ignored_dtype is None
+            or compute_dtype is None
+            or ignored_dtype != compute_dtype
+        ):
+            raise ValueError(
+                "--fsdp-ignored-frozen-param-dtype must match the training "
+                f"compute dtype --dtype ({training_args.dtype}); got "
+                f"{training_args.fsdp_ignored_frozen_param_dtype}"
+            )
+
+
 def validate(training_args, model_cfg, data_cfg):
     """Validate the combination of TrainingArgs + ModelConfig + DataConfig.
 
@@ -48,6 +96,11 @@ def validate(training_args, model_cfg, data_cfg):
     if training_args.manual_gc_interval < 0:
         raise ValueError(
             f"--manual-gc-interval must be >= 0, got {training_args.manual_gc_interval}"
+        )
+    if training_args.dataloader_prefetch_factor <= 0:
+        raise ValueError(
+            "--dataloader-prefetch-factor must be positive, got "
+            f"{training_args.dataloader_prefetch_factor}"
         )
     if training_args.cuda_graph_warmup_steps <= 0:
         raise ValueError(
@@ -92,9 +145,36 @@ def validate(training_args, model_cfg, data_cfg):
             "--fsdp-backward-prefetch-distance",
             training_args.fsdp_backward_prefetch_distance,
         ),
+        (
+            "--fsdp-delta-fp8-prime-steps",
+            training_args.fsdp_delta_fp8_prime_steps,
+        ),
+        (
+            "--fsdp-delta-fp8-reprime-interval",
+            training_args.fsdp_delta_fp8_reprime_interval,
+        ),
     ):
         if value < 0:
             raise ValueError(f"{option_name} must be non-negative, got {value}")
+    delta_fp8_block = training_args.fsdp_delta_fp8_block
+    if delta_fp8_block <= 0 or delta_fp8_block & (delta_fp8_block - 1):
+        raise ValueError(
+            "--fsdp-delta-fp8-block must be a positive power of two, got "
+            f"{delta_fp8_block}"
+        )
+    if delta_fp8_block > 1 << 20:
+        raise ValueError(
+            "--fsdp-delta-fp8-block must be <= 1048576 for Triton "
+            f"tl.arange, got {delta_fp8_block}"
+        )
+    if (
+        training_args.fsdp_delta_fp8_allgather
+        and training_args.distributed_strategy != "fsdp"
+    ):
+        raise ValueError(
+            "--fsdp-delta-fp8-allgather requires --distributed-strategy fsdp"
+        )
+    _validate_fsdp_ignored_frozen_args(training_args)
 
     if (
         training_args.hsdp_shard_size is not None

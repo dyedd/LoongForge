@@ -137,6 +137,7 @@ class DreamZeroConfig(PreTrainedConfig):
     # switches stay disabled unless a recipe enables them explicitly.
     compile_causal_attention: bool = True
     compile_causal_attention_parts: str = "clean,state,noisy_image,noisy_action"
+    compile_causal_attention_block: bool = False
     compile_causal_attention_warmup_frames: str = ""
     compile_causal_attention_warmup_blocks: str = "all"
     compile_causal_attention_warmup_batch: int = 1
@@ -154,7 +155,6 @@ class DreamZeroConfig(PreTrainedConfig):
     flash_attention_dense_policy: str = "legacy_min_q"
     cache_fa_lens: bool = False
     cache_fa_lens_clone: bool = False
-    avoid_rope_reconcat: bool = False
     fused_rope: bool = False
     fused_rope_fp64: bool = False
     batch_vae_encode: bool = False
@@ -414,6 +414,9 @@ def dreamzero_dit_performance_options(
         "compile_causal_attention_parts": _dreamzero_str(
             model_config.compile_causal_attention_parts
         ),
+        "compile_causal_attention_block": _dreamzero_bool(
+            model_config.compile_causal_attention_block
+        ),
         "compile_causal_attention_warmup_frames": _dreamzero_str(
             model_config.compile_causal_attention_warmup_frames
         ),
@@ -443,9 +446,6 @@ def dreamzero_dit_performance_options(
         ),
         "qk_rmsnorm_impl": _dreamzero_str(
             model_config.qk_rmsnorm_impl
-        ),
-        "avoid_rope_reconcat": _dreamzero_bool(
-            model_config.avoid_rope_reconcat
         ),
         "skip_single_state_attention": _dreamzero_bool(
             model_config.skip_single_state_attention

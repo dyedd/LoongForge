@@ -100,9 +100,9 @@ def attn_res_aggregate(
 
 
 def sum_grads_across_tp(module: nn.Module) -> None:
-    """Mark a module's replicated parameters so TP ranks sum their gradients."""
+    """Mark replicated parameters for TP gradient reduction."""
     for parameter in module.parameters():
-        parameter.sum_gradients_across_tp_domain = True
+        parameter.allreduce_gradients_across_tp_domain = True
 
 
 @cache

@@ -457,6 +457,22 @@ class FastWAMPolicy(nn.Module):
             )
         return denorm[None, :, :]  # [batch=1, horizon, action_dim]
 
+    @staticmethod
+    def default_fp8_targets() -> Dict[str, Any]:
+        """Convert both MoT experts' transformer blocks.
+
+        The experts are also reachable through ``core.mot.mixtures``, but their
+        first registered paths are directly under ``core``. ``named_modules``
+        suppresses the later aliases, so the canonical paths are required here.
+        Conditioning and output heads stay at their configured precision.
+        """
+        return {
+            "module_patterns": [
+                "core.video_expert.blocks",
+                "core.action_expert.blocks",
+            ],
+            "skip_modules": [],
+        }
 
     @classmethod
     def from_pretrained(cls, cfg: Any) -> "FastWAMPolicy":

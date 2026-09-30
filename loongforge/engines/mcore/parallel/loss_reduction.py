@@ -3,15 +3,16 @@
 #
 # Modified from Megatron-LM under the BSD 3-Clause License.
 
-"""Generic loss function"""
+"""Loss functions and DP/CP reporting reduction utilities."""
 
-from loongforge.engines.mcore import get_args
-import torch
 import os
-from megatron.core import mpu
+
+import torch
 import torch.distributed as dist
+from megatron.core import mpu
 from megatron.training.utils import average_losses_across_data_parallel_group
 
+from loongforge.engines.mcore import get_args
 
 def default_loss_func(
     loss_mask: torch.Tensor,
@@ -174,3 +175,5 @@ def loss_func_internvl(
         )
     num_tokens = torch.as_tensor(num_tokens, dtype=torch.int, device=num_tokens.device)
     return loss, num_tokens, loss_reduced_dict
+
+

@@ -3,7 +3,8 @@
 
 """MCore training entry."""
 
-from loongforge.engines.mcore import build_model_trainer, parse_train_args
+from loongforge.engines.mcore.parser import parse_train_args
+from loongforge.engines.mcore.trainer_builder import build_model_trainer
 
 
 def main():

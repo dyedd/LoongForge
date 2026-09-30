@@ -15,9 +15,10 @@ from megatron.training.arguments import validate_args
 from packaging.version import Version as PkgVersion
 
 from loongforge.engines.mcore.tokenizer import get_default_tokenizer
-from loongforge.engines.mcore import (constants, get_device_arch_version,
-                                      is_torch_min_version, print_rank_0, convert_custom_pipeline_to_layout)
-from loongforge.engines.mcore.utils import get_default_sft_dataset_config, get_transformers_version
+from loongforge.engines.mcore import (constants, print_rank_0)
+from loongforge.engines.mcore.utils import (get_default_sft_dataset_config, get_transformers_version,
+                                             get_device_arch_version, is_torch_min_version,
+                                             convert_custom_pipeline_to_layout)
 
 
 def validate_loongforge_extra_args(args, config):

@@ -45,8 +45,9 @@ def _auto_import_model_modules():
             except ImportError as exc:
                 # Lazy import: keeps the module-level ``register_model``
                 # decorator path free of the training-side distributed stack.
+                # Phase 2C: replace is_rank_zero import from torch engine with explicit parameter
                 from loongforge.engines.torch.distributed.utils import is_rank_zero
-                if is_rank_zero():   
+                if is_rank_zero():
                     logger.warning(
                         "Skipping optional model package during auto-registration:\n"
                         "  - package: %s\n"

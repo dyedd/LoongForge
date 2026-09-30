@@ -33,7 +33,7 @@ from loongforge.engines.mcore import constants, get_args, get_model_config
 from loongforge.engines.mcore.megatron_trainer import MegatronTrainer
 from loongforge.engines.mcore.trainer_builder import register_model_trainer
 from loongforge.engines.mcore.training_utils import dump_model_input_example_once
-from loongforge.engines.mcore.sft.utils import (
+from loongforge.data.sft_dataloader import (
     build_sft_data_collator,
     build_sft_cyclic_iterators,
 )
@@ -52,7 +52,7 @@ from loongforge.models.multimodal.multimodal_model_provider import (
     omni_model_provider,
 )
 from loongforge.engines.mcore.parallel.context_parallel import get_batch_on_this_cp_rank
-from loongforge.engines.mcore.get_loss_func import default_loss_func
+from loongforge.engines.mcore.parallel.loss_reduction import default_loss_func
 from loongforge.engines.mcore.initialize import (
     change_parallel_state,
     get_encoder_dp_size,
@@ -461,7 +461,7 @@ def train_valid_test_dataset_provider(train_val_test_num_samples, vp_stage=None)
 
         # Build encoder-specific iterator for full_hetero_dp
         if getattr(args, 'enable_full_hetero_dp', False):
-            from loongforge.engines.mcore.sft.utils import (
+            from loongforge.engines.mcore.parallel.batch_broadcast import (
                 build_full_hetero_encoder_data_iterator,
             )
             from loongforge.engines.mcore.initialize import (

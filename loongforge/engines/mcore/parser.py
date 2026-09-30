@@ -21,12 +21,12 @@ from dataclasses import fields
 
 from loongforge.engines.mcore.model_config import build_model_config
 from loongforge.engines.mcore.arguments import loongforge_extra_train_args_provider
-from loongforge.engines.mcore.get_loss_func import (default_loss_func,
-                                                    loss_func_internvl)
-from loongforge.engines.mcore.get_position_idx_func import (get_mrope_index,
-                                                            get_position_ids,
-                                                            get_rope_index_internvl,
-                                                            get_rope_index_qwen3vl)
+from loongforge.engines.mcore.parallel.loss_reduction import (default_loss_func,
+                                                                    loss_func_internvl)
+from loongforge.data.multimodal.position_ids import (get_mrope_index,
+                                                      get_position_ids,
+                                                      get_rope_index_internvl,
+                                                      get_rope_index_qwen3vl)
 from loongforge.engines.mcore.validators import (validate_loongforge_extra_args,
                                                 validate_custom_model_args,
                                                 validate_megatron_args)

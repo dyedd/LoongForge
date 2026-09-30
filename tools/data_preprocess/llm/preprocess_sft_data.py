@@ -20,7 +20,7 @@ from loongforge.data import (
 from loongforge.engines.mcore.tokenizer import build_tokenizer
 from loongforge.engines.mcore import constants
 from loongforge.engines.mcore.utils import get_default_sft_dataset_config
-from loongforge.engines.mcore.sft.utils import get_dataset_blend_from_list
+from loongforge.data.sft_dataloader import get_dataset_blend_from_list
 
 
 def build_sft_dataset(args):

@@ -45,9 +45,9 @@ from loongforge.engines.mcore import constants, get_args, get_model_config
 from loongforge.engines.mcore.megatron_trainer import MegatronTrainer
 from loongforge.engines.mcore.trainer_builder import register_model_trainer
 
-from .utils import (
-    get_batch_on_this_tp_rank,
-    get_batch_on_this_cp_rank,
+from loongforge.engines.mcore.parallel.batch_broadcast import get_batch_on_this_tp_rank
+from loongforge.engines.mcore.parallel.context_parallel import get_batch_on_this_cp_rank
+from loongforge.data.sft_dataloader import (
     get_dataset_blend_from_list,
     build_sft_cyclic_iterators,
     build_sft_data_collator,

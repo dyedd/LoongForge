@@ -17,7 +17,7 @@ from transformers import DataCollatorForSeq2Seq
 from megatron.core.packed_seq_params import PackedSeqParams
 from megatron.training import get_timers
 from megatron.core import mpu, tensor_parallel
-from loongforge.engines.mcore.get_loss_func import default_loss_func
+from loongforge.engines.mcore.parallel.loss_reduction import default_loss_func
 from megatron.core import parallel_state
 
 from megatron.core.transformer.enums import AttnMaskType
@@ -29,7 +29,7 @@ from loongforge.models import get_model_provider, get_model_family
 from loongforge.engines.mcore.megatron_trainer import MegatronTrainer
 from loongforge.engines.mcore.trainer_builder import register_model_trainer
 from loongforge.data.multimodal.internvl.internvl_task_encoder import InternVLTaskEncoder
-from loongforge.engines.mcore.sft.utils import (
+from loongforge.data.sft_dataloader import (
     build_sft_data_collator,
     build_sft_cyclic_iterators,
 )

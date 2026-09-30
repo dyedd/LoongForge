@@ -13,7 +13,6 @@ import shutil
 import sys
 import threading
 from argparse import Namespace
-from enum import Enum, auto
 from logging import getLogger
 from pathlib import Path
 from time import time
@@ -41,6 +40,22 @@ from megatron.training.async_utils import is_empty_async_queue, schedule_async_s
 from megatron.training.global_vars import get_args
 from megatron.training.one_logger_utils import on_save_checkpoint_start, on_save_checkpoint_success
 from megatron.training.utils import append_to_progress_log, is_last_rank, print_rank_0, unwrap_model
+from megatron.training.checkpointing import (
+    get_checkpoint_version,
+    set_checkpoint_version,
+    isfile,
+    ensure_directory_exists,
+    get_load_checkpoint_path_by_args,
+    get_distributed_optimizer_checkpoint_name,
+    get_checkpoint_tracker_filename,
+    checkpoint_exists,
+    CheckpointType,
+    _get_checkpoint_format,
+    _to_dtensor,
+    cleanup_old_non_persistent_checkpoint,
+    _get_non_persistent_iteration,
+    _load_global_dist_base_checkpoint,
+)
 
 from loongforge.models.common.peft.utils import apply_peft_adapter_filter_to_state_dict
 try:
@@ -66,8 +81,6 @@ try:
 except Exception:
     has_nvidia_modelopt = False
 
-_CHECKPOINT_VERSION = None
-
 logger = getLogger(__name__)
 _NON_PERSISTENT_CKPT_SUBDIR = 'non_persistent'
 
@@ -82,18 +95,6 @@ def _load_model_state_dict(module, state_dict, strict: bool):
             raise
         load_return = module.load_state_dict(state_dict, strict=False)
         print(f"[load_state_dict strict=False] return: {load_return}")
-
-
-def set_checkpoint_version(value):
-    global _CHECKPOINT_VERSION
-    if _CHECKPOINT_VERSION is not None:
-        assert _CHECKPOINT_VERSION == value, "checkpoint versions do not match"
-    _CHECKPOINT_VERSION = value
-
-
-def get_checkpoint_version():
-    global _CHECKPOINT_VERSION
-    return _CHECKPOINT_VERSION
 
 
 def check_checkpoint_args(checkpoint_args):
@@ -134,24 +135,6 @@ def check_checkpoint_args(checkpoint_args):
     if get_checkpoint_version() >= 3.0 and not args.use_dist_ckpt:
         _compare('tensor_model_parallel_size')
         _compare('pipeline_model_parallel_size')
-
-
-def isfile(filename) -> bool:
-    if MultiStorageClientFeature.is_enabled():
-        msc = MultiStorageClientFeature.import_package()
-        return msc.os.path.isfile(filename)
-    else:
-        return os.path.isfile(filename)
-
-
-def ensure_directory_exists(filename, check_parent=True):
-    """Build filename's path if it does not already exists."""
-    dirname = os.path.dirname(filename) if check_parent else filename
-    if MultiStorageClientFeature.is_enabled():
-        msc = MultiStorageClientFeature.import_package()
-        msc.os.makedirs(dirname, exist_ok=True)
-    else:
-        os.makedirs(dirname, exist_ok=True)
 
 
 def get_checkpoint_name(
@@ -201,27 +184,6 @@ def get_checkpoint_name(
         common_path = common_path + f'_{expert_rank:03d}'
 
     return os.path.join(common_path, basename)
-
-
-def get_load_checkpoint_path_by_args(args, load_arg="load"):
-    """Get the checkpoint path based on the arguments."""
-    load_dir = getattr(args, load_arg)
-    iteration, release = -1, False
-    tracker_filename = 'because load directory is not defined'
-    if load_dir is not None:
-        tracker_filename = get_checkpoint_tracker_filename(load_dir)
-        if isfile(tracker_filename):
-            iteration, release = read_metadata(tracker_filename)
-
-    # Allow user to specify the loaded iteration.
-    if getattr(args, "ckpt_step", None):
-        iteration = args.ckpt_step
-
-    return get_checkpoint_name(load_dir, iteration, release, return_base_dir=True)
-
-
-def get_distributed_optimizer_checkpoint_name(model_checkpoint_name):
-    return os.path.join(os.path.dirname(model_checkpoint_name), "distrib_optim.pt")
 
 
 def find_checkpoint_rank_0(checkpoints_path, iteration, release=False):
@@ -297,19 +259,6 @@ def find_checkpoint_rank_0(checkpoints_path, iteration, release=False):
         return filename
 
     return None
-
-
-def get_checkpoint_tracker_filename(checkpoints_path):
-    """Tracker file rescords the latest chckpoint during
-    training to restart from."""
-    return os.path.join(checkpoints_path, 'latest_checkpointed_iteration.txt')
-
-
-def checkpoint_exists(checkpoints_path):
-    if checkpoints_path is None:
-        return False
-    path = get_checkpoint_tracker_filename(checkpoints_path)
-    return isfile(path)
 
 
 def read_metadata(tracker_filename):
@@ -550,14 +499,6 @@ def get_rng_state(ckpt_format: str):
         rng_state_list = {f"({pp_rank}, {tp_rank})": rng_state_list}
 
     return rng_state_list
-
-
-class CheckpointType(Enum):
-    LEGACY = auto()
-    LOCAL = auto()
-    GLOBAL = auto()
-    TORCH_DCP = auto()
-    FSDP_DTENSOR = auto()
 
 
 def _build_sharded_state_dict_metadata(args: Namespace) -> dict:
@@ -1039,32 +980,6 @@ def save_checkpoint(
     ft_integration.on_checkpointing_end(is_async_finalization=False)
 
 
-def cleanup_old_non_persistent_checkpoint(save_dir, leave_ckpt_num=1, do_async=False):
-    if torch.distributed.is_initialized() and torch.distributed.get_rank() != 0:
-        return
-    save_dir = Path(save_dir)
-
-    iter_prefix = "iter_"
-    iter_ckpts = save_dir.rglob(f'{iter_prefix}*')
-    sorted_iter_ckpts = sorted(
-        iter_ckpts, key=lambda ckpt_name: int(ckpt_name.name[len(iter_prefix) :])
-    )
-    if not sorted_iter_ckpts:
-        return
-    rm_iter_ckpts = sorted_iter_ckpts[:-leave_ckpt_num]
-    print_rank_0(f'Non-persistent checkpoints scheduled for removal: {rm_iter_ckpts}')
-    print_rank_0(f'Non-persistent checkpoints to be kept: {sorted_iter_ckpts[-leave_ckpt_num:]}')
-
-    def remove_iter_ckpts(_iter_ckpts):
-        for ckpt in _iter_ckpts:
-            shutil.rmtree(ckpt)
-
-    if do_async:
-        threading.Thread(target=remove_iter_ckpts, args=(rm_iter_ckpts,)).start()
-    else:
-        remove_iter_ckpts(rm_iter_ckpts)
-
-
 def maybe_save_dataloader_state(train_iterator, iteration, dataloader_save_path):
     """Saves dataloader state if the dataloader supports it.
 
@@ -1273,29 +1188,6 @@ def fix_query_key_value_ordering(model, checkpoint_version):
         )
 
 
-def _get_non_persistent_iteration(non_persistent_global_dir, args, checkpointing_context=None):
-    if args.non_persistent_ckpt_type is None:
-        return -1
-    elif args.non_persistent_ckpt_type == "global":
-        tracker_filename = get_checkpoint_tracker_filename(non_persistent_global_dir)
-        if isfile(tracker_filename):
-            iteration, release = read_metadata(tracker_filename)
-            if release:
-                raise RuntimeError('Non-persistent checkpoint can\'t be a release checkpoint')
-        else:
-            iteration = -1
-            print_rank_0('WARNING: could not find the metadata file {}'.format(tracker_filename))
-            print_rank_0('    will not load any non-persistent checkpoint')
-        return iteration
-    elif args.non_persistent_ckpt_type == "local":
-        return checkpointing_context['local_checkpoint_manager'].find_latest()
-    else:
-        assert False, (
-            'Please use local or global non-persistent checkpoints'
-            f'(got: {args.non_persistent_ckpt_type})'
-        )
-
-
 def _load_non_persistent_base_checkpoint(
     non_persistent_global_dir,
     args,
@@ -1336,65 +1228,6 @@ def _load_non_persistent_base_checkpoint(
         raise NotImplementedError(
             f"Please use local or global non-persistent checkpoints (got: {args.non_persistent_ckpt_type})"
         )
-
-
-def _load_global_dist_base_checkpoint(
-    load_dir, args, rank0, sharded_state_dict, iteration, release, checkpointing_context=None
-):
-    """Load the base state_dict from the given directory containing the global distributed checkpoint"""
-    if rank0:
-        checkpoint_name = find_checkpoint_rank_0(load_dir, iteration, release)
-        state_dict = dist_checkpointing.load_common_state_dict(checkpoint_name)
-        return state_dict, checkpoint_name, release, CheckpointType.GLOBAL
-
-    if sharded_state_dict is None:
-        assert not args.auto_detect_ckpt_format and not args.use_dist_ckpt, (
-            args.auto_detect_ckpt_format,
-            args.use_dist_ckpt,
-        )
-        raise RuntimeError(
-            'Detected load from a distributed checkpoint, but neither --use-dist-ckpt nor --auto-detect-ckpt-format is set.'
-        )
-
-    checkpoint_name = get_checkpoint_name(load_dir, iteration, release, return_base_dir=True)
-    load_strategy = get_default_load_sharded_strategy(checkpoint_name)
-    # NOTE: `args.ckpt_fully_parallel_load` applies to both persistent and non-persistent checkpoints.
-    if args.ckpt_fully_parallel_load:
-        load_strategy = FullyParallelLoadStrategyWrapper(
-            load_strategy, mpu.get_data_parallel_group(with_context_parallel=True)
-        )
-    if checkpointing_context is not None:
-        checkpointing_context["load_strategy"] = load_strategy
-    state_dict = dist_checkpointing.load(
-        sharded_state_dict, checkpoint_name, load_strategy, strict=args.dist_ckpt_strictness
-    )
-    return state_dict, checkpoint_name, release, CheckpointType.GLOBAL
-
-
-def _get_checkpoint_format(checkpoint_name, args):
-    """Get the format of an existing checkpoint."""
-    if MultiStorageClientFeature.is_enabled():
-        msc = MultiStorageClientFeature.import_package()
-        checkpoint_dir = msc.Path(checkpoint_name)
-        is_torch_ckpt = any([f.name.startswith("mp_rank_0") for f in checkpoint_dir.iterdir()])
-        is_torch_dcp = checkpoint_dir.joinpath(".metadata").exists()
-    else:
-        is_torch_ckpt = any([f.startswith("mp_rank_0") for f in os.listdir(checkpoint_name)])
-        is_torch_dcp = os.path.exists(os.path.join(checkpoint_name, ".metadata"))
-
-    ckpt_format = None
-    if dist_checkpointing.check_is_distributed_checkpoint(checkpoint_name):
-        ckpt_format = "torch_dist"
-    elif is_torch_ckpt:
-        ckpt_format = "torch"
-    elif is_torch_dcp:
-        ckpt_format = "torch_dcp"
-        if getattr(args, "use_megatron_fsdp", False):
-            ckpt_format = "fsdp_dtensor"
-    else:
-        raise NotImplementedError(f"unknown checkpoint format in {checkpoint_name}")
-
-    return ckpt_format
 
 
 def _load_base_checkpoint(
@@ -2193,20 +2026,6 @@ def _load_checkpoint_from_path(
         ft_integration.on_checkpoint_loaded(is_local_chkpt=is_local_chkpt)
 
     return iteration, num_floating_point_operations_so_far
-
-
-def _to_dtensor(wrapped_model, model_state_dict):
-    device_mesh = wrapped_model[0].device_mesh
-
-    new_model_sd = dict()
-    for k, v in model_state_dict.items():
-        # FP8 extra state cannot be converted to dtensor yet.
-        if "_extra_state" in k:
-            new_model_sd[k] = v
-        else:
-            new_model_sd[k] = torch.distributed.tensor.distribute_tensor(v, device_mesh)
-
-    return new_model_sd
 
 
 def load_biencoder_checkpoint(

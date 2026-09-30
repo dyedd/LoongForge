@@ -26,7 +26,7 @@ from loongforge.engines.mcore import get_model_config
 from loongforge.models.multimodal.multimodal_model_provider import (
     omni_model_provider
 )
-from loongforge.engines.mcore.get_loss_func import default_loss_func
+from loongforge.engines.mcore.parallel.loss_reduction import default_loss_func
 
 logger = logging.getLogger(__name__)
 stimer = StragglerDetector()

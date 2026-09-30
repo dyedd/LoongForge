@@ -1,16 +1,27 @@
 # Copyright 2026 The LoongForge Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Get position index function"""
+"""Position ID utilities for multimodal data."""
+
 import torch
-from loongforge.engines.mcore import get_model_config
 from typing import Tuple
 
 
-def get_rope_index_qwen3vl(batch_data):
+def _get_position_ids(data: torch.Tensor):
+    """create position ids"""
+    current_device = data.device
+    _, seq_length = data.shape
+
+    position_ids = torch.arange(seq_length, dtype=torch.long, device=current_device)
+    position_ids = position_ids.unsqueeze(0).expand_as(data)
+    return position_ids
+
+
+def get_rope_index_qwen3vl(batch_data, model_config=None):
     """Different from the original implementation, Qwen3VLMoe use timestamps rather than absolute time position ids."""
     
-    model_config = get_model_config()
+    if model_config is None:
+                model_config = get_model_config()
     spatial_merge_size = 2
     mrope_position_deltas = []
     input_ids = batch_data.get("tokens", None)
@@ -148,11 +159,12 @@ def get_rope_index_qwen3vl(batch_data):
         return position_ids, mrope_position_deltas
         
 
-def get_rope_index_internvl(batch_data):
+def get_rope_index_internvl(batch_data, model_config=None):
     """Build position ids based on the input tokens."""
     attention_mask = batch_data.get("attn_mask", None)
     x = batch_data.get("tokens", None)
-    model_config = get_model_config()
+    if model_config is None:
+                model_config = get_model_config()
     VISION_TOKEN_TYPE = model_config.get("vision_token_type", 1)
     LANGUAGE_TOKEN_TYPE = model_config.get("language_token_type", 0)
     if attention_mask is not None:
@@ -178,9 +190,10 @@ def get_rope_index_internvl(batch_data):
     return y, None
 
 
-def get_mrope_index(batch_data) -> Tuple[torch.Tensor, torch.Tensor]:
+def get_mrope_index(batch_data, model_config=None) -> Tuple[torch.Tensor, torch.Tensor]:
     """Slightly modified from Qwen2_5VLForConditionalGeneration.get_rope_index"""
-    model_config = get_model_config()
+    if model_config is None:
+                model_config = get_model_config()
     spatial_merge_size = 2
     mrope_position_deltas = []
     input_ids = batch_data.get("tokens", None)
@@ -337,7 +350,7 @@ def get_mrope_index(batch_data) -> Tuple[torch.Tensor, torch.Tensor]:
         return position_ids, mrope_position_deltas
 
 
-def get_position_ids(batch_data):
+def get_position_ids(batch_data, model_config=None):
     """Build position ids based on the input tokens."""
     attention_mask = batch_data.get("attn_mask", None).logical_not()
     assert (

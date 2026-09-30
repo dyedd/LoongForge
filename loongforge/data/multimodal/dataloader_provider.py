@@ -22,7 +22,7 @@ from megatron.training import get_args
 from megatron.training.checkpointing import get_checkpoint_name
 from loongforge.engines.mcore import constants, get_model_config, print_rank_0
 from .base.task_encoder import print_error_handler
-from loongforge.engines.mcore.get_position_idx_func import get_position_ids
+from loongforge.data.multimodal.position_ids import get_position_ids
 
 IGNORE_INDEX = constants.IGNORE_INDEX
 PAD_TOKEN_ID = 151643

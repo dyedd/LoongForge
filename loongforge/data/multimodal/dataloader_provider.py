@@ -544,7 +544,7 @@ def build_full_hetero_encoder_energon_iterator(
     wraps it with EncoderStridedIterator to yield only microbatches assigned
     to this PP rank.
     """
-    from loongforge.data.encoder_strided_sampler import EncoderStridedIterator, PrefetchIterator
+    from loongforge.engines.mcore.parallel.encoder_strided_sampler import EncoderStridedIterator, PrefetchIterator
     from loongforge.engines.mcore.initialize import get_num_micro_batches_per_decoder_dp
 
     encoder_dataset = get_train_dataset(task_encoder)

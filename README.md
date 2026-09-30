@@ -85,8 +85,8 @@ Since optimal training strategies differ across model families and scales, Loong
 ## 🔥 Latest News
 
 - **[2026/09]** ✨ Added **[Kimi-K3](./examples/kimi_k3/)** BF16 training support for both LLMs and VLMs.
-- **[2026/09]** ⚡ Added an optimized **[DreamZero Wan2.2-5B FSDP recipe](./examples/embodied/dreamzero/run_dreamzero_wan22_5b_full_fsdp_finetune.sh)** with cache-aware data loading, compiled attention blocks, frozen-module handling, and Delta-FP8 AllGather.
-- **[2026/08]** 🤖 Added VLA training support for **[Wall-OSS-0.5](./examples/embodied/wall_oss_0_5/)**, with custom fused operators for higher training throughput.
+- **[2026/09]** ⚡ Added an optimized **[DreamZero Wan2.2-5B FSDP recipe](./examples/dreamzero/finetune_dreamzero_wan22_5b_full_fsdp.sh)** with cache-aware data loading, compiled attention blocks, frozen-module handling, and Delta-FP8 AllGather.
+- **[2026/08]** 🤖 Added VLA training support for **[Wall-OSS-0.5](./examples/wall_oss_0_5/)**, with custom fused operators for higher training throughput.
 - **[2026/08]** 📄 Released the **[TAOT paper](https://arxiv.org/abs/2608.03676)** — topology-aware dynamic expert replica placement that tackles expert-parallel (**EP**) load imbalance in **MoE** training, cutting overhead by up to **74%** over industry solutions, with **1.43× speedup** measured on a real training case. [[blog](https://baidu-baige.github.io/LoongForge/blog/2026-08-taot-topology-aware-expert-placement.html)]
 - **[2026/08]** ✨ Added training support for **GLM-5.2**, along with a **[GLM-5.2 + MoonViT](./configs/models/glm5.2_vit/)** custom-composition [example](./examples/glm5.2_vit/) for extending GLM with multimodal capabilities.
 - **[2026/08]** ✨ Added training support for **MiniCPM-V-4.6** and **Qwen3.8-27B**.
@@ -212,7 +212,7 @@ LoongForge supports a broad range of model families across LLM, VLM, diffusion, 
 <li><a href="examples/qwen3.5/">Qwen3.5</a> ✅</li>
 <li><a href="examples/qwen3.6/">Qwen3.6</a> ✅</li>
 <li><a href="examples/qwen3.8/">Qwen3.8</a> ✅</li>
-<li><a href="examples/kimi_k2.x/kimi_k2.5/">Kimi-K2.5/2.6</a> ✅</li>
+<li><a href="examples/kimi_k2.5/">Kimi-K2.5/2.6</a> ✅</li>
 <li><a href="examples/kimi_k3/">Kimi-K3</a> ✅</li>
 <li><a href="examples/minicpm_v_4_6/">MiniCPM-V-4.6</a> ✅</li>
 <li><a href="examples/glm5.2_vit/">GLM-5.2 + MoonViT</a> ✅</li>
@@ -232,15 +232,15 @@ LoongForge supports a broad range of model families across LLM, VLM, diffusion, 
 </td>
 <td valign="top">
 <ul>
-<li><a href="examples/embodied/pi05/">Pi0.5</a> ✅</li>
-<li><a href="examples/embodied/groot_n1_6/">GR00T-N1.6</a> ✅</li>
-<li><a href="examples/embodied/groot_n1_7/">GR00T-N1.7</a> ✅</li>
-<li><a href="examples/embodied/xvla/">xVLA</a> ✅</li>
-<li><a href="examples/embodied/wall_oss_0_5/">Wall-OSS-0.5</a> ✅</li>
-<li><a href="examples/embodied/fastwam/">FastWAM</a> ✅</li>
-<li><a href="examples/embodied/lingbot_va/">LingBot-VA</a> ✅</li>
-<li><a href="examples/embodied/cosmos3/">Cosmos3</a> ✅</li>
-<li><a href="examples/embodied/dreamzero/">DreamZero</a> ✅</li>
+<li><a href="examples/pi05/">Pi0.5</a> ✅</li>
+<li><a href="examples/groot_n1_6/">GR00T-N1.6</a> ✅</li>
+<li><a href="examples/groot_n1_7/">GR00T-N1.7</a> ✅</li>
+<li><a href="examples/xvla/">xVLA</a> ✅</li>
+<li><a href="examples/wall_oss_0_5/">Wall-OSS-0.5</a> ✅</li>
+<li><a href="examples/fastwam/">FastWAM</a> ✅</li>
+<li><a href="examples/lingbot_va/">LingBot-VA</a> ✅</li>
+<li><a href="examples/cosmos3/">Cosmos3</a> ✅</li>
+<li><a href="examples/dreamzero/">DreamZero</a> ✅</li>
 </ul>
 </td>
 </tr>

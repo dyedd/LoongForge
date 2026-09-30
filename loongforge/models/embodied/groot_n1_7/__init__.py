@@ -3,7 +3,7 @@
 
 """GR00T-N1.7 model package."""
 
-from loongforge.models.embodied.groot_n1_7.model_configuration_groot_n1_7 import (
+from loongforge.models.embodied.groot_n1_7.configuration_groot_n1_7 import (
     GrootN1d7Config,
 )
 from loongforge.models.embodied.groot_n1_7.modeling_groot_n1_7 import (

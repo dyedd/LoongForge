@@ -34,7 +34,7 @@ def wrap_model(model: nn.Module, training_args, ctx: DistributedContext) -> nn.M
     """Wrap model with DDP or FSDP based on CLI training_args; mixed precision included."""
     # Imported here, not at module scope: train/__init__ pulls in trainers, which
     # import this module, so a top-level import would be circular.
-    from loongforge.engines.torch.training_args import parse_dtype_from_str
+    from loongforge.engines.torch.arguments import parse_dtype_from_str
 
     dtype = parse_dtype_from_str(training_args.dtype)
     apply_activation_checkpointing(
@@ -96,7 +96,7 @@ def _wrap_fsdp(
     # defaulting the all-gather dtype to ``--dtype`` for uniform-dtype models.
     storage_dtype = dtype
     if training_args.fsdp_original_param_dtype is not None:
-        from loongforge.engines.torch.training_args import parse_dtype_from_str
+        from loongforge.engines.torch.arguments import parse_dtype_from_str
 
         storage_dtype = parse_dtype_from_str(training_args.fsdp_original_param_dtype)
 
@@ -161,7 +161,7 @@ def _wrap_dmuon_fsdp(
         )
 
     # Local import to break the train/__init__ -> trainers -> this module cycle.
-    from loongforge.engines.torch.training_args import parse_dtype_from_str
+    from loongforge.engines.torch.arguments import parse_dtype_from_str
 
     storage_dtype = (
         parse_dtype_from_str(training_args.fsdp_original_param_dtype)

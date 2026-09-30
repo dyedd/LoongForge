@@ -3,6 +3,6 @@
 
 """Native PyTorch LingBot-VA backend."""
 
-from .model_configuration_lingbot_va import LingBotVAModelConfig
+from .configuration_lingbot_va import LingBotVAModelConfig
 
 __all__ = ["LingBotVAModelConfig"]

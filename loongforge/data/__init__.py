@@ -14,7 +14,7 @@ _EXPORTS = {
     "HFChatTemplate": "chat_template",
     "get_support_templates": "chat_template",
     "load_chat_template_kwargs": "chat_template",
-    "MMPlugin": "mm_plugin",
+    "MMPlugin": "multimodal.plugins.mm_plugin",
     "DataCollatorForSupervisedDataset": "sft_data_collator",
     "MultiModalDataCollatorForSupervisedDataset": "sft_data_collator",
 }

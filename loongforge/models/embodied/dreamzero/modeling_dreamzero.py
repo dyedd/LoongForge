@@ -28,7 +28,7 @@ from transformers.feature_extraction_utils import BatchFeature
 
 from loongforge.models.embodied.registry import register_model
 
-from .model_configuration_dreamzero import DreamZeroConfig
+from .configuration_dreamzero import DreamZeroConfig
 from .modules.action_head_tf import WANPolicyHead, WANPolicyHeadConfig
 from .precomputed_cache import build_precomputed_cache_config
 

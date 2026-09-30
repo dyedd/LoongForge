@@ -18,7 +18,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from loongforge.data.embodied.dataloader import build_dataloader
-from loongforge.engines.torch.distributed.checkpoint import (
+from loongforge.engines.torch.checkpointing import (
     detect_checkpoint_format,
     is_lora_adapter_checkpoint,
     load_pretrained,

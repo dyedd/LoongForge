@@ -10,10 +10,10 @@ This chapter describes the directory layout and launch script convention under e
 
 | Path | Description |
 | --- | --- |
-| `examples/embodied/` | Model-level launch scripts; default configs can be overridden via the trailing pass-through arguments at the end of each script |
-| `configs/models/embodied/` | Default YAML configs per model, containing two top-level sections: `model:` and `data:` |
+| `examples/` | Model-level launch scripts; default configs can be overridden via the trailing pass-through arguments at the end of each script |
+| `configs/models/` | Default YAML configs per model, containing two top-level sections: `model:` and `data:` |
 | `loongforge/train.py` | Training entry point; parses config, builds the Trainer, and starts training |
-| `loongforge/engines/torch/training_args.py` | Definition file for common training arguments; generates the shell CLI |
+| `loongforge/engines/torch/arguments.py` | Definition file for common training arguments; generates the shell CLI |
 | `loongforge/models/catalog.py` | Shared model routing table; binds `--model-name` to an engine, YAML, and (for Torch) typed config classes |
 | `loongforge/models/embodied/` | Torch embodied model architecture and model registration |
 | `loongforge/data/embodied/datasets/` | Embodied data processing components |
@@ -21,7 +21,7 @@ This chapter describes the directory layout and launch script convention under e
 The training pipeline is:
 
 ```text
-examples/embodied/<model>/run_*.sh
+examples/<model>/finetune_*.sh
     ↓
 loongforge/train.py
     ↓
@@ -51,7 +51,7 @@ torchrun "${DISTRIBUTED_ARGS[@]}" \
 Example:
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --train-iters 10000 \
     --per-device-batch-size 8 \
     model.action_horizon=64 \
@@ -236,7 +236,7 @@ Use `--lr-group` to assign independent learning rates to different modules. A co
 Example:
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --lr-base 1.0e-4 \
     --lr-group "model.backbone=1.0e-5,model.action_head=1.0e-4"
 ```
@@ -267,7 +267,7 @@ The checkpoint module offers:
 Resume example:
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --output-dir /path/to/previous_run \
     --resume
 ```
@@ -326,7 +326,7 @@ Training precision supports `bfloat16` (default), `float16`, and `float32`.
 DDP example:
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --distributed-strategy ddp \
     --dtype bfloat16
 ```
@@ -334,7 +334,7 @@ bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
 FSDP example:
 
 ```bash
-bash examples/embodied/pi05/run_pi05_fsdp_finetune.sh \
+bash examples/pi05/finetune_pi05_fsdp.sh \
     --distributed-strategy fsdp \
     --dtype bfloat16
 ```
@@ -342,7 +342,7 @@ bash examples/embodied/pi05/run_pi05_fsdp_finetune.sh \
 DDP + ZeRO-1 example:
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --distributed-strategy ddp \
     --zero-optimizer
 ```
@@ -376,7 +376,7 @@ The following arguments give fine-grained control over DDP communication behavio
 Example:
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --distributed-strategy ddp \
     --no-ddp-find-unused-parameters \
     --ddp-static-graph

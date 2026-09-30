@@ -56,7 +56,7 @@ except ImportError:
     layernorm_forward = None
     _transformers_available = False
 
-from loongforge.models.embodied.pi05.model_configuration_pi05 import Pi05ModelConfig
+from loongforge.models.embodied.pi05.configuration_pi05 import Pi05ModelConfig
 from loongforge.models.embodied.registry import register_model
 
 logger = logging.getLogger(__name__)
@@ -1032,9 +1032,9 @@ class PI05Policy(nn.Module):
     @torch.no_grad()
     def predict_action(self, images, instructions, state=None, dataset_stats=None) -> np.ndarray:
         """Inference: Euler ODE denoising, returns ndarray (B, action_horizon, max_action_dim)."""
-        from loongforge.data.embodied.datasets.pi05.transforms.pi05_transform import StateDiscretizationTransform
-        from loongforge.data.embodied.datasets.transforms.utils.builders import convert_stats
-        from loongforge.data.embodied.datasets.transforms.utils.image_transform import ImageTransform
+        from loongforge.data.embodied.transforms.pi05.pi05_transform import StateDiscretizationTransform
+        from loongforge.data.embodied.transforms.builders import convert_stats
+        from loongforge.data.embodied.transforms.image_transform import ImageTransform
 
         device = next(self.parameters()).device
         if not isinstance(images[0], list):

@@ -15,7 +15,7 @@ from loongforge.evaluation.embodied.servers.loongforge_policy import (
     GenericPredictActionPolicy,
     PredictActionModelSpec,
 )
-from loongforge.models.embodied.xvla.model_configuration_xvla import XvlaModelConfig
+from loongforge.models.embodied.xvla.configuration_xvla import XvlaModelConfig
 from loongforge.models.embodied.registry import build_model
 
 

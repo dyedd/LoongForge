@@ -29,7 +29,7 @@ import numpy as np
 from loongforge.evaluation.embodied.factories.registry import register_factory
 from loongforge.evaluation.embodied.servers.eval_server_config import EvalServerArgs
 from loongforge.evaluation.embodied.servers.loongforge_policy import PredictActionModelSpec
-from loongforge.models.embodied.groot_n1_6.model_configuration_groot_n1_6 import (
+from loongforge.models.embodied.groot_n1_6.configuration_groot_n1_6 import (
     GrootN1d6ModelConfig,
 )
 from loongforge.models.embodied.registry import build_model

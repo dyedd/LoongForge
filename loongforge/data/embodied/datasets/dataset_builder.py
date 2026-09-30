@@ -26,7 +26,7 @@ def _default_strategy_builder() -> Callable:
 
 
 def _fastwam_strategy_builder() -> Callable:
-    from loongforge.data.embodied.datasets.fastwam import (
+    from loongforge.data.embodied.datasets.fastwam_dataset import (
         build_fastwam_lerobot_dataset,
     )
 
@@ -40,7 +40,7 @@ def _lingbot_va_strategy_builder() -> Callable:
 
 
 def _groot_n1_7_strategy_builder() -> Callable:
-    from loongforge.data.embodied.datasets.groot_n1_7 import (
+    from loongforge.data.embodied.datasets.groot_n1_7_dataset import (
         build_groot_n1_7_lerobot_dataset,
     )
 
@@ -48,7 +48,7 @@ def _groot_n1_7_strategy_builder() -> Callable:
 
 
 def _cosmos3_droid_strategy_builder() -> Callable:
-    from loongforge.data.embodied.datasets.cosmos3 import (
+    from loongforge.data.embodied.datasets.droid_lerobot_dataset import (
         build_droid_dataset,
     )
 

@@ -14,10 +14,10 @@ from typing import Any
 
 import yaml
 
-from loongforge.data.embodied.datasets.dreamzero.transforms.data_configuration_dreamzero import (
+from loongforge.data.embodied.transforms.dreamzero.data_configuration_dreamzero import (
     DreamZeroDataConfig,
 )
-from loongforge.models.embodied.dreamzero.model_configuration_dreamzero import DreamZeroConfig
+from loongforge.models.embodied.dreamzero.configuration_dreamzero import DreamZeroConfig
 
 _MODEL_CONFIG_FIELDS = {field.name for field in fields(DreamZeroConfig)}
 

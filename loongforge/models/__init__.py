@@ -3,7 +3,7 @@
 
 """Model implementations shared by the training entry points."""
 
-from .factory import (
+from .mcore_registry import (
     get_model_config,
     get_model_family,
     get_model_provider,

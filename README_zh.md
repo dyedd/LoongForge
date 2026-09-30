@@ -85,8 +85,8 @@
 ## 🔥 最新动态
 
 - **[2026/09]** ✨ 新增 **[Kimi-K3](./examples/kimi_k3/)** 的 LLM 与 VLM BF16 训练支持。
-- **[2026/09]** ⚡ 新增优化后的 **[DreamZero Wan2.2-5B FSDP recipe](./examples/embodied/dreamzero/run_dreamzero_wan22_5b_full_fsdp_finetune.sh)**，集成 cache-aware 数据加载、attention block 编译、冻结模块处理与 Delta-FP8 AllGather。
-- **[2026/08]** 🤖 新增 **[Wall-OSS-0.5](./examples/embodied/wall_oss_0_5/)** VLA 训练支持，并通过自定义融合算子提升训练吞吐。
+- **[2026/09]** ⚡ 新增优化后的 **[DreamZero Wan2.2-5B FSDP recipe](./examples/dreamzero/finetune_dreamzero_wan22_5b_full_fsdp.sh)**，集成 cache-aware 数据加载、attention block 编译、冻结模块处理与 Delta-FP8 AllGather。
+- **[2026/08]** 🤖 新增 **[Wall-OSS-0.5](./examples/wall_oss_0_5/)** VLA 训练支持，并通过自定义融合算子提升训练吞吐。
 - **[2026/08]** 📄 发布 **[TAOT 论文](https://arxiv.org/abs/2608.03676)** —— 通过拓扑感知的动态专家副本放置，优化 **MoE** 训练中的专家并行（**EP**）负载不均衡，相较业界方案开销最大可降低 **74%**，案例实测 **1.43× 加速**。[[blog](https://baidu-baige.github.io/LoongForge/blog/2026-08-taot-topology-aware-expert-placement.html)]
 - **[2026/08]** ✨ 新增 **GLM-5.2** 训练支持，并提供 **[GLM-5.2 + MoonViT](./configs/models/glm5.2_vit/)** 自定义组合[示例](./examples/glm5.2_vit/)，可用于为 GLM 扩展多模态能力。
 - **[2026/08]** ✨ 新增 **MiniCPM-V-4.6** 与 **Qwen3.8-27B** 训练支持。
@@ -212,7 +212,7 @@ LoongForge 已支持 LLM、VLM、Diffusion 与 Embodied 等类别的广泛模型
 <li><a href="examples/qwen3.5/">Qwen3.5</a> ✅</li>
 <li><a href="examples/qwen3.6/">Qwen3.6</a> ✅</li>
 <li><a href="examples/qwen3.8/">Qwen3.8</a> ✅</li>
-<li><a href="examples/kimi_k2.x/kimi_k2.5/">Kimi-K2.5/2.6</a> ✅</li>
+<li><a href="examples/kimi_k2.5/">Kimi-K2.5/2.6</a> ✅</li>
 <li><a href="examples/kimi_k3/">Kimi-K3</a> ✅</li>
 <li><a href="examples/minicpm_v_4_6/">MiniCPM-V-4.6</a> ✅</li>
 <li><a href="examples/glm5.2_vit/">GLM-5.2 + MoonViT</a> ✅</li>
@@ -232,15 +232,15 @@ LoongForge 已支持 LLM、VLM、Diffusion 与 Embodied 等类别的广泛模型
 </td>
 <td valign="top">
 <ul>
-<li><a href="examples/embodied/pi05/">Pi0.5</a> ✅</li>
-<li><a href="examples/embodied/groot_n1_6/">GR00T-N1.6</a> ✅</li>
-<li><a href="examples/embodied/groot_n1_7/">GR00T-N1.7</a> ✅</li>
-<li><a href="examples/embodied/xvla/">xVLA</a> ✅</li>
-<li><a href="examples/embodied/wall_oss_0_5/">Wall-OSS-0.5</a> ✅</li>
-<li><a href="examples/embodied/fastwam/">FastWAM</a> ✅</li>
-<li><a href="examples/embodied/lingbot_va/">LingBot-VA</a> ✅</li>
-<li><a href="examples/embodied/cosmos3/">Cosmos3</a> ✅</li>
-<li><a href="examples/embodied/dreamzero/">DreamZero</a> ✅</li>
+<li><a href="examples/pi05/">Pi0.5</a> ✅</li>
+<li><a href="examples/groot_n1_6/">GR00T-N1.6</a> ✅</li>
+<li><a href="examples/groot_n1_7/">GR00T-N1.7</a> ✅</li>
+<li><a href="examples/xvla/">xVLA</a> ✅</li>
+<li><a href="examples/wall_oss_0_5/">Wall-OSS-0.5</a> ✅</li>
+<li><a href="examples/fastwam/">FastWAM</a> ✅</li>
+<li><a href="examples/lingbot_va/">LingBot-VA</a> ✅</li>
+<li><a href="examples/cosmos3/">Cosmos3</a> ✅</li>
+<li><a href="examples/dreamzero/">DreamZero</a> ✅</li>
 </ul>
 </td>
 </tr>

@@ -18,7 +18,7 @@ def apply_activation_checkpointing(
     raw_skip_modules: str | list[str] | None,
 ) -> None:
     """Checkpoint the modules selected by the patterns, minus those the skip patterns match."""
-    from loongforge.engines.torch.training_args import parse_module_key_patterns
+    from loongforge.engines.torch.arguments import parse_module_key_patterns
 
     module_patterns = parse_module_key_patterns(
         raw_module_patterns,

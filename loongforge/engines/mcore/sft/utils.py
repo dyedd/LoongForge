@@ -1087,7 +1087,7 @@ def build_full_hetero_encoder_data_iterator(
     Uses EncoderStridedSampler to yield only microbatches assigned to this PP rank,
     avoiding unnecessary disk IO for microbatches handled by other ranks.
     """
-    from loongforge.data.encoder_strided_sampler import EncoderStridedSampler
+    from loongforge.engines.mcore.parallel.encoder_strided_sampler import EncoderStridedSampler
 
     args = get_args()
     batch_sampler = EncoderStridedSampler(
@@ -1111,7 +1111,7 @@ def build_full_hetero_encoder_data_iterator(
         pin_memory=True,
         persistent_workers=True if args.num_workers > 0 else False,
     )
-    from loongforge.data.encoder_strided_sampler import PrefetchIterator
+    from loongforge.engines.mcore.parallel.encoder_strided_sampler import PrefetchIterator
     from loongforge.engines.mcore.initialize import get_num_micro_batches_per_decoder_dp
     _, encoder_rounds = get_num_micro_batches_per_decoder_dp()
     prefetch_count = tp_size * encoder_rounds

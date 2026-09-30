@@ -18,12 +18,12 @@ from transformers.dynamic_module_utils import get_class_from_dynamic_module
 from transformers.processing_utils import ProcessorMixin
 
 from loongforge.data.chat_template import MAPPING_NAME_TO_TEMPLATE
-from loongforge.data.kimi_plugin import KimiPlugin
+from loongforge.data.multimodal.plugins.kimi_plugin import KimiPlugin
 from loongforge.data.multimodal import dataloader_provider
-from loongforge.data.multimodal.base.task_encoder import BaseTaskEncoder
+from loongforge.data.multimodal.task_encoder import BaseTaskEncoder
 from loongforge.data.multimodal.kimi_task_encoder import KimiTaskEncoder
 from loongforge.data.multimodal.vlm_task_encoder import VLMTaskEncoder
-from loongforge.models.omni_models.omni_encoder_model import OmniEncoderModel
+from loongforge.models.multimodal.encoder_model import OmniEncoderModel
 from loongforge.engines.mcore import constants
 
 
@@ -351,7 +351,7 @@ class OmniImageFeatureValidationTest(unittest.TestCase):
         return encoder
 
     @patch(
-        "loongforge.models.omni_models.omni_encoder_model.get_args",
+        "loongforge.models.multimodal.encoder_model.get_args",
         return_value=SimpleNamespace(use_vit_dp_balance=False),
     )
     def test_matching_image_tokens_and_features_are_accepted(self, _):
@@ -365,7 +365,7 @@ class OmniImageFeatureValidationTest(unittest.TestCase):
         self.assertEqual(mask.sum().item(), 8)
 
     @patch(
-        "loongforge.models.omni_models.omni_encoder_model.get_args",
+        "loongforge.models.multimodal.encoder_model.get_args",
         return_value=SimpleNamespace(use_vit_dp_balance=False),
     )
     def test_mismatched_image_tokens_and_features_are_rejected(self, _):

@@ -131,7 +131,7 @@ from megatron.core.transformer.multi_token_prediction import MTPLossLoggingHelpe
 from dataclasses import asdict
 from loongforge.engines.mcore import get_args, constants, global_vars
 from .initialize import initialize_loongforge_megatron
-from loongforge.data.dp_balance.train_hooks import (
+from loongforge.engines.mcore.parallel.dp_balance.train_hooks import (
     train_step_decorator,
     train_log_decorator
 )
@@ -1490,7 +1490,7 @@ def train_step(
             get_num_real_micro_batches_per_decoder_dp,
             change_parallel_state,
         )
-        from loongforge.engines.mcore.pretrain.pretrain_vlm import (
+        from loongforge.training.methods.pretrain_vlm import (
             get_batch, get_embedding_list,
             get_visual_pos_masks_list, get_deepstack_visual_embeds_list,
             get_deepstack_grad_list, _create_mock_batch,
@@ -1643,7 +1643,7 @@ def train_step(
 
         # Offload gathered embeddings to CPU (only rank 0 holds them)
         if args.full_hetero_dp_cpu_offload:
-            from loongforge.engines.mcore.pretrain.pretrain_vlm import get_cpu_offload_manager
+            from loongforge.training.methods.pretrain_vlm import get_cpu_offload_manager
             from loongforge.engines.mcore.full_hetero_cpu_offload import offload_list_items
             _offload_mgr = get_cpu_offload_manager()
             _local_rank_for_offload = torch.distributed.get_rank(mpu.get_model_parallel_group())
@@ -1720,7 +1720,7 @@ def train_step(
         )
 
     if args.enable_full_hetero_dp:
-        from loongforge.engines.mcore.pretrain.pretrain_vlm import (
+        from loongforge.training.methods.pretrain_vlm import (
             get_grad_list, get_deepstack_grad_list, clear_full_hetero_info
         )
         from loongforge.engines.mcore.initialize import (
@@ -1736,7 +1736,7 @@ def train_step(
 
         # Reload offloaded grads from CPU before reshaping
         if args.full_hetero_dp_cpu_offload:
-            from loongforge.engines.mcore.pretrain.pretrain_vlm import get_cpu_offload_manager
+            from loongforge.training.methods.pretrain_vlm import get_cpu_offload_manager
             _reload_mgr = get_cpu_offload_manager()
             _reload_mgr.wait_all_offloads()
             for _gi in range(len(grad_list)):

@@ -236,7 +236,7 @@ def main() -> None:
     parser.add_argument(
         "--config-file",
         type=Path,
-        default=Path("configs/models/embodied/dreamzero_wan22_5b.yaml"),
+        default=Path("configs/models/dreamzero/dreamzero_wan22_5b.yaml"),
     )
     parser.add_argument("--data-path", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)

@@ -36,11 +36,11 @@ from safetensors.torch import load_file
 from torch import nn
 from transformers.feature_extraction_utils import BatchFeature
 
-from loongforge.data.embodied.datasets.groot_n1_6.transforms.processor_groot_n1_6 import (
+from loongforge.data.embodied.transforms.groot_n1_6.processor_groot_n1_6 import (
     Gr00tN1d6DataCollator,
     StateActionProcessor,
 )
-from loongforge.data.embodied.datasets.groot_n1_6.transforms.utils import (
+from loongforge.data.embodied.transforms.groot_n1_6.utils import (
     EMBODIMENT_STAT_CONFIGS,
     EMBODIMENT_TAG_TO_PROJECTOR_INDEX,
     MODALITY_CONFIGS,
@@ -48,12 +48,12 @@ from loongforge.data.embodied.datasets.groot_n1_6.transforms.utils import (
 )
 from loongforge.models.embodied.registry import register_model
 
-from loongforge.data.embodied.datasets.groot_n1_6.transforms.eagle3_model.image_augmentations import (
+from loongforge.data.embodied.transforms.groot_n1_6.eagle3_model.image_augmentations import (
     build_image_transformations_albumentations,
 )
 
 from .eagle3_model import EagleBackbone
-from .model_configuration_groot_n1_6 import GrootN1d6ModelConfig
+from .configuration_groot_n1_6 import GrootN1d6ModelConfig
 from .modules.dit import AlternateVLDiT, DiT
 from .modules.embodiment_mlp import (
     CategorySpecificMLP,

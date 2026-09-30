@@ -83,7 +83,7 @@ loongforge/
 - `transport/` owns the WebSocket/msgpack-numpy client and server.
 - `metrics/` writes per-run and suite reports.
 
-To add a supported model, implement a factory under `factories/`, add a payload builder or decoder only when its action semantics differ, and add an example YAML under `examples/embodied/*/eval/`.
+To add a supported model, implement a factory under `factories/`, add a payload builder or decoder only when its action semantics differ, and add an example YAML under `examples/*/eval/`.
 
 ---
 

@@ -49,8 +49,8 @@ class TrainDispatchTest(unittest.TestCase):
     def test_default_paths_are_independent_of_working_directory(self):
         for name, relative in (
             ("qwen3-0.6b", "configs/models/qwen3/qwen3_0_6b.yaml"),
-            ("pi05", "configs/models/embodied/pi05.yaml"),
-            ("cosmos3-nano", "configs/models/embodied/cosmos3/nano.yaml"),
+            ("pi05", "configs/models/pi05/pi05.yaml"),
+            ("cosmos3-nano", "configs/models/cosmos3/nano.yaml"),
         ):
             with self.subTest(name=name):
                 self.assertEqual(Path(catalog.get_config_path(name)), ROOT / relative)
@@ -77,8 +77,8 @@ class TrainDispatchTest(unittest.TestCase):
         with patch.object(catalog, "import_module", side_effect=modules) as load:
             self.assertEqual(catalog.get_config_types("pi05"), (model_cls, data_cls))
             self.assertEqual([call.args[0] for call in load.call_args_list], [
-                "loongforge.models.embodied.pi05.model_configuration_pi05",
-                "loongforge.data.embodied.datasets.pi05.transforms.data_configuration_pi05",
+                "loongforge.models.embodied.pi05.configuration_pi05",
+                "loongforge.data.embodied.transforms.pi05.data_configuration_pi05",
             ])
         with self.assertRaises(ValueError):
             catalog.get_config_types("qwen3-0.6b")

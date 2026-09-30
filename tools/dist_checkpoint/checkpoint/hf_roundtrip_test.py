@@ -68,8 +68,8 @@ from megatron.training import print_rank_0
 
 from loongforge.engines.mcore.parser import parse_train_args
 from loongforge.engines.mcore.initialize import initialize_loongforge_megatron
-from loongforge.models.foundation.llm_model_provider import llm_model_provider
-from loongforge.models.omni_models.omni_model_provider import omni_model_provider
+from loongforge.models.language.llm_model_provider import llm_model_provider
+from loongforge.models.multimodal.multimodal_model_provider import omni_model_provider
 from loongforge.engines.mcore import get_model_config
 
 from dist_checkpoint.checkpoint.hf_checkpoint_loader import load_hf_checkpoint_online

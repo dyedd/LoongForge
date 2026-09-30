@@ -11,7 +11,7 @@
 
 ```yaml
 # 继承该模型系列的通用配置类
-_target_: loongforge.models.foundation.Llama3Config
+_target_: loongforge.models.language.Llama3Config
 
 # 修改特定参数
 num_layers: 80
@@ -50,7 +50,7 @@ VLM 可以看作 **ViT + 投影层 + LLM**。添加新 VLM 模型时，LLM 部�
 
 ```yaml
 # 通过此路径找到 Qwen2VisionRMSNormConfig 类，使用以下参数（如 num_layers、hidden_size 等）创建其实例
-_target_: loongforge.models.encoder.Qwen2VisionRMSNormConfig
+_target_: loongforge.models.vision.Qwen2VisionRMSNormConfig
 
 num_layers: 32
 hidden_size: 1280
@@ -71,7 +71,7 @@ Projector 的实现与 OmniEncoder 相互关联。每种 VLM 模型配备专用�
 
 ```yaml
 # 选择 image_projector 类型
-_target_: loongforge.models.encoder.MLPAdapterConfig
+_target_: loongforge.models.vision.MLPAdapterConfig
 
 # 修改组件特定的配置参数
 normalization: "RMSNorm"

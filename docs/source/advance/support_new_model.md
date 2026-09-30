@@ -11,7 +11,7 @@ If your LLM is a new specification of an existing architecture (e.g., from Llama
 
 ```yaml
 # Inherit the common configuration class for this model family
-_target_: loongforge.models.foundation.Llama3Config
+_target_: loongforge.models.language.Llama3Config
 
 # Modify specific parameters
 num_layers: 80
@@ -50,7 +50,7 @@ Define Vision Transformer parameters.
 
 ```yaml
 # Find the Qwen2VisionRMSNormConfig class through this path, use the following parameters (e.g., num_layers, hidden_size, etc.) to create its instance
-_target_: loongforge.models.encoder.Qwen2VisionRMSNormConfig
+_target_: loongforge.models.vision.Qwen2VisionRMSNormConfig
 
 num_layers: 32
 hidden_size: 1280
@@ -71,7 +71,7 @@ The Projector implementation is interrelated with OmniEncoder. Each type of VLM 
 
 ```yaml
 # Select image_projector type
-_target_: loongforge.models.encoder.MLPAdapterConfig
+_target_: loongforge.models.vision.MLPAdapterConfig
 
 # Modify component-specific configuration parameters
 normalization: "RMSNorm"

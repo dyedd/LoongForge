@@ -36,7 +36,7 @@ The example below runs LIBERO with pi05:
     ```
 
     For the eval client deps, common issues, and the verified version list, check the [LIBERO guide](benchmarks/libero.md) Environment setup section; the verified environment version lists are in [benchmark_envs.md](benchmark_envs.md).
-2. **Get the weights and edit the config** — download [lerobot/pi05_libero_finetuned_v044](https://huggingface.co/lerobot/pi05_libero_finetuned_v044), then fill the `/path/to/...` placeholders in `examples/embodied/pi05/eval/configs/libero/object_smoke.yaml`:
+2. **Get the weights and edit the config** — download [lerobot/pi05_libero_finetuned_v044](https://huggingface.co/lerobot/pi05_libero_finetuned_v044), then fill the `/path/to/...` placeholders in `examples/pi05/eval/configs/libero/object_smoke.yaml`:
 
     ```yaml
     server:
@@ -60,7 +60,7 @@ The example below runs LIBERO with pi05:
 
     ```bash
     cd /path/to/LoongForge
-    examples/embodied/pi05/eval/run_libero_eval.sh
+    examples/pi05/eval/run_libero_eval.sh
     ```
 
 The LIBERO simulator runs in the benchmark environment; the policy server is launched from the YAML `server.python` field, pointing at the LoongForge environment.
@@ -129,7 +129,7 @@ Key fields:
 - `benchmark.name` — selects the benchmark runner.
 - `model.model_type` — **required**; selects the model factory / PayloadBuilder (`pi05` | `xvla` | `Gr00tN1d6`). There is no default — the eval server fails fast if it is missing.
 - `model.backend` — `loongforge` for a real model, `mock` for a pipeline-only check (no model weights; the server returns mock actions to validate the eval chain).
-- `model:` — model-structure fields (`action_dim`, `action_horizon`, …) plus optional capability fields (`state_encoding` / `action_encoding` / `domain_id`). The fields are **model-specific** — pi05, xvla, and GR00T-N1.6 declare different structural fields (see the per-model configs under `examples/embodied/<model>/eval/configs/` and the [model integration guide](model_integration.md)). Defaults are sensible per model, so you rarely set the capability fields by hand.
+- `model:` — model-structure fields (`action_dim`, `action_horizon`, …) plus optional capability fields (`state_encoding` / `action_encoding` / `domain_id`). The fields are **model-specific** — pi05, xvla, and GR00T-N1.6 declare different structural fields (see the per-model configs under `examples/<model>/eval/configs/` and the [model integration guide](model_integration.md)). Defaults are sensible per model, so you rarely set the capability fields by hand.
 - `server.ckpt_path` — a directory with `model.safetensors` (or the weight file). Set `server.random_init: true` to run without weights.
 - `server.dataset_statistics_path` — action-normalization stats the model uses internally (e.g. pi05).
 - `server.python` — the model server interpreter.

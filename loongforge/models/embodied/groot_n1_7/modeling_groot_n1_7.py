@@ -26,23 +26,23 @@ import torch.nn.functional as F
 from torch.distributions import Beta
 from transformers.feature_extraction_utils import BatchFeature
 
-from loongforge.data.embodied.datasets.groot_n1_6.transforms.processor_groot_n1_6 import (
+from loongforge.data.embodied.transforms.groot_n1_6.processor_groot_n1_6 import (
     StateActionProcessor,
 )
-from loongforge.data.embodied.datasets.groot_n1_7.transforms.groot_collator import (
+from loongforge.data.embodied.transforms.groot_n1_7.groot_collator import (
     Gr00tN1d7DataCollator,
 )
-from loongforge.data.embodied.datasets.groot_n1_7.transforms.groot_transform import (
+from loongforge.data.embodied.transforms.groot_n1_7.groot_transform import (
     EMBODIMENT_STAT_CONFIGS,
     EMBODIMENT_TAG_TO_PROJECTOR_INDEX,
     MODALITY_CONFIGS,
     convert_lerobot_stats_to_groot_n1d7_format,
 )
-from loongforge.data.embodied.datasets.groot_n1_7.transforms.image_augmentations import (
+from loongforge.data.embodied.transforms.groot_n1_7.image_augmentations import (
     build_image_transformations_albumentations,
 )
 from loongforge.models.embodied.registry import register_model
-from .model_configuration_groot_n1_7 import GrootN1d7Config
+from .configuration_groot_n1_7 import GrootN1d7Config
 from .modules.dit import AlternateVLDiT, DiT, SelfAttentionTransformer
 from .modules.embodiment_mlp import CategorySpecificMLP, MultiEmbodimentActionEncoder
 from .modules.qwen3_backbone import Qwen3Backbone

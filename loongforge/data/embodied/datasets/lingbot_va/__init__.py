@@ -42,9 +42,7 @@ def __getattr__(name):
         "LingBotVAPreprocessor",
         "build_lingbot_va_transforms",
     }:
-        from loongforge.data.embodied.datasets.lingbot_va import (
-            transforms as transforms_mod,
-        )
+        from loongforge.data.embodied.transforms import lingbot_va as transforms_mod
 
         return getattr(transforms_mod, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

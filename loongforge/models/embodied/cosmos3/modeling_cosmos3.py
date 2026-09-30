@@ -34,7 +34,7 @@ from loongforge.models.embodied.cosmos3.cosmos3_vfm_network import (
     Cosmos3VFMNetworkConfig,
 )
 from loongforge.models.embodied.registry import register_model
-from loongforge.models.embodied.cosmos3.modeling_configuration_cosmos3 import Cosmos3ModelConfig
+from loongforge.models.embodied.cosmos3.configuration_cosmos3 import Cosmos3ModelConfig
 from loongforge.models.embodied.cosmos3.flow_matching import compute_flow_matching_loss
 from loongforge.models.embodied.cosmos3.modeling_utils import has_noisy_tokens
 from loongforge.models.embodied.cosmos3.rectified_flow import RectifiedFlow
@@ -44,7 +44,7 @@ from loongforge.models.embodied.cosmos3.sequence_packing import (
 from loongforge.models.embodied.cosmos3.data_and_condition import GenerationDataClean
 from loongforge.models.embodied.cosmos3.unified_mot import Qwen3VLMoTConfig, Qwen3VLTextForCausalLM
 from loongforge.models.embodied.cosmos3.wan2pt2_vae_4x16x16 import Wan2pt2VAEInterface
-from loongforge.data.embodied.datasets.cosmos3.transforms.cosmos3_preprocessor import Cosmos3Batch
+from loongforge.data.embodied.transforms.cosmos3.cosmos3_preprocessor import Cosmos3Batch
 from loongforge.engines.torch.utils.utils import resolve_dtype
 
 logger = logging.getLogger(__name__)

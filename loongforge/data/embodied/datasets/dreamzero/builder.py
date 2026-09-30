@@ -12,31 +12,31 @@ import torch
 from torch.utils.data import Dataset, Sampler
 from torchdata.stateful_dataloader.sampler import StatefulDistributedSampler
 
-from loongforge.data.embodied.datasets.dreamzero.transforms.dreamzero_collator import (
+from loongforge.data.embodied.transforms.dreamzero.dreamzero_collator import (
     DreamTransform,
 )
-from loongforge.data.embodied.datasets.dreamzero.dataset.datasets import (
+from loongforge.data.embodied.datasets.dreamzero.dataset import (
     DreamZeroLeRobotMixtureDataset,
     DreamZeroLeRobotDataset,
 )
-from loongforge.data.embodied.datasets.dreamzero.dataset.modality_configs import (
+from loongforge.data.embodied.datasets.dreamzero.modality_configs import (
     EMBODIMENT_BUILDERS,
     EMBODIMENT_TAG_TO_ID,
 )
 from loongforge.data.embodied.datasets.dreamzero.sampler import (
     DreamZeroShardedSampler,
 )
-from loongforge.data.embodied.datasets.dreamzero.transforms.base import (
+from loongforge.data.embodied.transforms.dreamzero.base import (
     ComposedModalityTransform,
 )
-from loongforge.data.embodied.datasets.dreamzero.transforms.concat import (
+from loongforge.data.embodied.transforms.dreamzero.concat import (
     ConcatTransform,
 )
-from loongforge.data.embodied.datasets.dreamzero.transforms.state_action import (
+from loongforge.data.embodied.transforms.dreamzero.state_action import (
     StateActionToTensor,
     StateActionTransform,
 )
-from loongforge.data.embodied.datasets.dreamzero.transforms.video import (
+from loongforge.data.embodied.transforms.dreamzero.video import (
     VideoColorJitter,
     VideoCrop,
     VideoResize,

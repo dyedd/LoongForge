@@ -6,7 +6,7 @@
 import torch
 from megatron.core.transformer.spec_utils import import_module
 
-from loongforge.models.factory import register_model_provider
+from loongforge.models.mcore_registry import register_model_provider
 from loongforge.engines.mcore import build_transformer_config, get_args, print_rank_0
 from loongforge.engines.mcore.constants import CustomModelFamilies
 

@@ -5,7 +5,7 @@
 
 import torch
 
-from loongforge.data.minicpm_v_4_6_plugin import MiniCPMV46Plugin
+from loongforge.data.multimodal.plugins.minicpm_v_4_6_plugin import MiniCPMV46Plugin
 from loongforge.data.multimodal.vlm_task_encoder import (
     IMAGE_TOKEN,
     IMAGE_TOKEN_WITH_TAGS,

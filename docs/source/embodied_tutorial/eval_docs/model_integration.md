@@ -43,7 +43,7 @@ Add new files, and **do not modify existing files**.
 
 1. **Implement the model components** — ModelFactory + PayloadBuilder (+ optional ActionDecoder), per the responsibilities above and the details in §3 Component details.
 2. **Implement the `predict_action` interface** — the model must expose `predict_action(images, instructions, state=None, dataset_stats=None)`; model-specific preprocessing and normalization live inside it, and the eval server calls it over RPC (see §2 The `predict_action` contract).
-3. **Write the eval config and scripts** (`examples/embodied/<model>/eval/`) — model-specific YAML fields (`state_encoding` / `action_encoding` / `domain_id`, ...) go under `model:`; `model.model_type` is **required** (no default). Verify each config point in §4 State / action semantics and §5 Engineering parameters.
+3. **Write the eval config and scripts** (`examples/<model>/eval/`) — model-specific YAML fields (`state_encoding` / `action_encoding` / `domain_id`, ...) go under `model:`; `model.model_type` is **required** (no default). Verify each config point in §4 State / action semantics and §5 Engineering parameters.
 4. **Run a smoke** (1 task × 1 episode, or a chain smoke) to validate the RPC / action semantics, then — with domain weights — task-success and full-scale eval.
 5. **Regression-test** already-succeeding combinations (at least pi05 × LIBERO) after changing **shared** code (runner / adapter / decoder / bridge / generic policy).
 
@@ -342,7 +342,7 @@ values are not duplicated here — they live with the model itself: the
 PayloadBuilder class attributes and comments in `payload_builders/<model>.py`
 (`state_encoding` / `action_encoding` / `action_dim` / `action_horizon`, and the
 supported encoding values), the factory, and that model's eval YAMLs under
-`examples/embodied/<model>/eval/configs/`.
+`examples/<model>/eval/configs/`.
 
 ### 4.1 Action space and dimensions
 

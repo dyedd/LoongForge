@@ -14,8 +14,8 @@ from torch.utils.data import Dataset, IterableDataset
 from torchdata.stateful_dataloader import StatefulDataLoader
 
 from loongforge.data.embodied.datasets.sampler_builder import build_sampler
-from loongforge.data.embodied.datasets.transforms.collator import build_preprocessor
-from loongforge.data.embodied.datasets.transforms.pipeline import build_transforms_from_args
+from loongforge.data.embodied.transforms.collator import build_preprocessor
+from loongforge.data.embodied.transforms.pipeline import build_transforms_from_args
 from loongforge.engines.torch.distributed import DistributedContext
 
 logger = logging.getLogger(__name__)

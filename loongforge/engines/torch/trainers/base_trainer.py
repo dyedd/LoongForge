@@ -16,7 +16,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from loongforge.engines.torch.distributed import DistributedContext
-from loongforge.engines.torch.distributed.checkpoint import (
+from loongforge.engines.torch.checkpointing import (
     flush_pending_save,
     get_latest_checkpoint,
     restore_rank_rng_state,
@@ -28,7 +28,7 @@ from loongforge.engines.torch.lora import (
     is_lora_enabled,
     load_adapter_into_model,
 )
-from loongforge.engines.torch.utils.logging import TrainingLogger, StageTimers, log_effective_config
+from loongforge.training.train_logging import TrainingLogger, StageTimers, log_effective_config
 from loongforge.engines.torch.utils.utils import (
     log_stage,
     set_deterministic,

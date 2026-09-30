@@ -17,7 +17,7 @@ from typing import Any
 import torch
 import torch.distributed as dist
 
-from loongforge.data.embodied.datasets.groot_n1_6.transforms.groot_collator import GrootN1d6PreparedBatch
+from loongforge.data.embodied.transforms.groot_n1_6.groot_collator import GrootN1d6PreparedBatch
 from loongforge.engines.torch.distributed.utils import unwrap_model
 
 logger = logging.getLogger(__name__)

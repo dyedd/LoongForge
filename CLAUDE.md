@@ -71,7 +71,7 @@ Test configs: `tests/llm_vlm/configs/` (CI suite) and `tests/llm_vlm/optional_co
 ### Embodied/VLA Regression Tests
 
 `tests/embodied/` is the end-to-end regression suite for training scripts under
-`loongforge/engines/torch/`, `loongforge/models/embodied/`, and `examples/embodied/`. Its entry point is
+`loongforge/engines/torch/`, `loongforge/models/embodied/`, and `examples/`. Its entry point is
 `tests/embodied/run.sh`; execution, metric parsing, and baseline comparison are owned by
 `tests/embodied/cli.py`. Regression targets are registered in
 `tests/embodied/config/scripts.yaml` and run serially in manifest order.
@@ -101,7 +101,7 @@ Embodied test conventions:
   `LOCAL_VLA_ARTIFACTS_ROOT`, log, and baseline paths. Prefer environment
   overrides or this file when moving the suite to another machine.
 - Add every new training script to `tests/embodied/config/scripts.yaml`; the manifest
-  path is relative to `examples/embodied/`. Add a baseline under
+  path is relative to `examples/`. Add a baseline under
   `tests/embodied/baseline/<chip>/<name>.json` for each supported chip.
 - The executor injects `OUTPUT_DIR`, `TENSORBOARD_DIR`, and model-specific environment
   variables. Training scripts should expose environment overrides for data, checkpoints,
@@ -143,9 +143,9 @@ Key arguments: `--model-name` (maps to an engine and config via `loongforge/mode
 - **`engines/mcore/training_utils.py`** — Extended Megatron pretrain loop (heavily customized).
 - **`engines/mcore/arguments.py`** — LoongForge-specific extra CLI arguments added on top of Megatron's.
 - **`engines/mcore/validators.py`** — Validation logic for Megatron and LoongForge args.
-- **`engines/mcore/pretrain/`** — Pretrain implementations for LLM and VLM.
+- **`training/methods/`** — Pretrain implementations for LLM and VLM.
 - **`engines/mcore/sft/`** — SFT implementations for LLM, VLM, InternVL, ERNIE.
-- **`engines/mcore/diffusion/`** — WAN and Qwen-Image trainers.
+- **`training/methods/`** — WAN and Qwen-Image trainers.
 - **`engines/torch/`** — Embodied Torch-native DDP/FSDP/ZeRO training runtime.
 - **`models/embodied/`** and **`data/embodied/`** — Embodied model and data implementations.
 
@@ -162,7 +162,7 @@ Key arguments: `--model-name` (maps to an engine and config via `loongforge/mode
 
 ### Configuration System: `configs/`
 
-- **`configs/models/<family>/<model>.yaml`** — Hydra/OmegaConf YAML configs defining model architecture params. The `_target_` field maps to a Python config dataclass (e.g., `loongforge.models.foundation.LLaMAConfig`).
+- **`configs/models/<family>/<model>.yaml`** — Hydra/OmegaConf YAML configs defining model architecture params. The `_target_` field maps to a Python config dataclass (e.g., `loongforge.models.language.LLaMAConfig`).
 - **`configs/data/`** — Data configuration templates.
 - **`loongforge/models/catalog.py`** — `MODEL_CONFIG_REGISTRY` maps `--model-name` strings to the owning engine, YAML, and (for Torch) typed config classes.
 
@@ -205,7 +205,7 @@ Kunlun XPU training scripts, mirroring `examples/` structure.
 
 ### Adding a New Model
 
-1. Create a config dataclass in `loongforge/models/foundation/` (or `encoder/` for vision), decorated with `@register_model_config(family, arch)`.
+1. Create a config dataclass in `loongforge/models/language/` (or `encoder/` for vision), decorated with `@register_model_config(family, arch)`.
 2. Create a model provider function decorated with `@register_model_provider(family)`.
 3. Register a trainer function with `@register_model_trainer(family, training_phase)`.
 4. Add YAML config under `configs/models/<family>/`.

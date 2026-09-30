@@ -81,7 +81,7 @@ loongforge/
 - `transport/` 负责 WebSocket/msgpack-numpy 客户端与服务端。
 - `metrics/` 写入单次运行和套件报告。
 
-新增评测模型时，在 `factories/` 添加工厂；只有动作语义不同才新增 payload builder 或 decoder，并在 `examples/embodied/*/eval/` 下添加示例 YAML。
+新增评测模型时，在 `factories/` 添加工厂；只有动作语义不同才新增 payload builder 或 decoder，并在 `examples/*/eval/` 下添加示例 YAML。
 
 ---
 

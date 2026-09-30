@@ -19,7 +19,7 @@ from megatron.training.checkpointing import load_args_from_checkpoint
 from omegaconf import DictConfig, OmegaConf
 from dataclasses import fields
 
-from loongforge.models.utils import build_model_config
+from loongforge.engines.mcore.model_config import build_model_config
 from loongforge.engines.mcore.arguments import loongforge_extra_train_args_provider
 from loongforge.engines.mcore.get_loss_func import (default_loss_func,
                                                     loss_func_internvl)

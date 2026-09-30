@@ -10,10 +10,10 @@
 
 | 路径 | 说明 |
 | --- | --- |
-| `examples/embodied/` | 模型级启动脚本目录，可通过脚本末尾的透传参数覆盖默认配置 |
-| `configs/models/embodied/` | 模型默认 YAML 配置目录，包含 `model:` / `data:` 两个顶层配置段 |
+| `examples/` | 模型级启动脚本目录，可通过脚本末尾的透传参数覆盖默认配置 |
+| `configs/models/` | 模型默认 YAML 配置目录，包含 `model:` / `data:` 两个顶层配置段 |
 | `loongforge/train.py` | 训练入口，负责解析配置、构建 Trainer 并启动训练 |
-| `loongforge/engines/torch/training_args.py` | 通用训练参数定义文件，负责生成 shell CLI |
+| `loongforge/engines/torch/arguments.py` | 通用训练参数定义文件，负责生成 shell CLI |
 | `loongforge/models/catalog.py` | 统一模型路由表，将 `--model-name` 绑定到引擎、YAML，以及 Torch 所需的配置类型 |
 | `loongforge/models/embodied/` | Torch 具身模型组网与模型注册 |
 | `loongforge/data/embodied/datasets/` | 具身数据处理相关功能 |
@@ -21,7 +21,7 @@
 训练链路如下：
 
 ```text
-examples/embodied/<model>/run_*.sh
+examples/<model>/finetune_*.sh
     ↓
 loongforge/train.py
     ↓
@@ -51,7 +51,7 @@ torchrun "${DISTRIBUTED_ARGS[@]}" \
 示例：
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --train-iters 10000 \
     --per-device-batch-size 8 \
     model.action_horizon=64 \
@@ -235,7 +235,7 @@ Fused Adam 加速实现说明：
 示例：
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --lr-base 1.0e-4 \
     --lr-group "model.backbone=1.0e-5,model.action_head=1.0e-4"
 ```
@@ -266,7 +266,7 @@ Checkpoint 模块提供以下能力：
 续训示例：
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --output-dir /path/to/previous_run \
     --resume
 ```
@@ -325,7 +325,7 @@ Trainer 模块负责训练生命周期编排，包括分布式上下文初始化
 DDP 示例：
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --distributed-strategy ddp \
     --dtype bfloat16
 ```
@@ -333,7 +333,7 @@ bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
 FSDP 示例：
 
 ```bash
-bash examples/embodied/pi05/run_pi05_fsdp_finetune.sh \
+bash examples/pi05/finetune_pi05_fsdp.sh \
     --distributed-strategy fsdp \
     --dtype bfloat16
 ```
@@ -341,7 +341,7 @@ bash examples/embodied/pi05/run_pi05_fsdp_finetune.sh \
 DDP + ZeRO-1 示例：
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --distributed-strategy ddp \
     --zero-optimizer
 ```
@@ -375,7 +375,7 @@ bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
 示例：
 
 ```bash
-bash examples/embodied/pi05/run_pi05_ddp_finetune.sh \
+bash examples/pi05/finetune_pi05_ddp.sh \
     --distributed-strategy ddp \
     --no-ddp-find-unused-parameters \
     --ddp-static-graph

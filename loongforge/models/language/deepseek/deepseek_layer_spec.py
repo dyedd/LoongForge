@@ -35,20 +35,24 @@ from megatron.core.transformer.moe.moe_layer import MoELayer, MoESubmodules
 from megatron.core.enums import Fp8Recipe
 
 from loongforge.models.common.layer_dispatch import multiacc_modules
-from loongforge.engines.mcore import get_args
 
 def _get_deepseek_layer_with_te_spec(
     num_experts: Optional[int] = None,
     moe_grouped_gemm: Optional[bool] = True,
     qk_layernorm: Optional[bool] = False,
     experimental_attention_variant: Optional[str] = None,
+    args=None,
 ) -> ModuleSpec:
     """Get the transformer layer spec for deepseek
-    
+
     Args:
         experimental_attention_variant (str, optional): The type of experimental attention variant.
                                                         Defaults to None.
     """
+    if args is None:
+        from loongforge.engines.mcore import get_args
+        args = get_args()
+
     mlp = _get_mlp_module_spec(
         num_experts=num_experts,
         moe_grouped_gemm=moe_grouped_gemm,
@@ -68,7 +72,7 @@ def _get_deepseek_layer_with_te_spec(
     if experimental_attention_variant is not None:
         # Deepseek Sparse Attention (DSA)
         if experimental_attention_variant == "dsa":
-            use_dsa_fused = getattr(get_args(), "use_dsa_fused", False)
+            use_dsa_fused = getattr(args, "use_dsa_fused", False)
             # By default, use the naive MegatronLM implementation of DSA.
             if not use_dsa_fused:
                 from megatron.core.transformer.experimental_attention_variant.dsa import (

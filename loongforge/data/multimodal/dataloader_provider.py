@@ -193,6 +193,14 @@ class VLMPretrainCollator:
     pad_to_multiple_of: Optional[int] = None
     label_pad_token_id: int = IGNORE_INDEX
     return_tensors: str = "pt"
+    args: Optional[Any] = None
+    model_config: Optional[Any] = None
+
+    def __post_init__(self):
+        if self.args is None:
+            self.args = get_args()
+        if self.model_config is None:
+            self.model_config = get_model_config()
 
     def _resolve_pad_token_id(self) -> int:
         pad_token_id = getattr(self.tokenizer, "pad_token_id", None)
@@ -202,7 +210,7 @@ class VLMPretrainCollator:
         """Normalize raw Energon batch tensors, pad for TP/CP configs, then build masks/positions."""
         batch = self._ensure_tensor(batch)
         self._pad_sequences(batch)
-        args = get_args()
+        args = self.args
         if _needs_packed_alignment(args, batch):
             seq_padding_for_cp(
                 batch,
@@ -273,7 +281,7 @@ class VLMPretrainCollator:
         labels = batch["labels"]
         attention_mask = batch["attn_mask"]
         cu_lengths = batch["cu_lengths"]
-        model_config = get_model_config()
+        model_config = self.model_config
         get_position_ids_func = getattr(
             model_config, "position_idx_func", get_position_ids
         )
@@ -335,9 +343,10 @@ def _validate_energon_data_paths(paths):
             )
 
 
-def get_train_dataset(task_encoder):
+def get_train_dataset(task_encoder, args=None):
     """Get the training dataset"""
-    args = get_args()
+    if args is None:
+        args = get_args()
     worker_config = energon.WorkerConfig(
         rank=parallel_state.get_data_parallel_rank(),
         world_size=parallel_state.get_data_parallel_world_size(),
@@ -383,9 +392,10 @@ def get_train_dataset(task_encoder):
     return train_ds
 
 
-def get_val_dataset(task_encoder):
+def get_val_dataset(task_encoder, args=None):
     """Build the validation split from the configured Energon dataset."""
-    args = get_args()
+    if args is None:
+        args = get_args()
     paths = getattr(args, "valid_data_path", None) or args.data_path
     if not isinstance(paths, (list, tuple)):
         paths = [paths]
@@ -456,9 +466,10 @@ def create_metadataset_yaml(data_paths, data_weights, split="train"):
     return yaml_path
 
 
-def get_train_loader(train_ds, collator=None, restore_state=True):
+def get_train_loader(train_ds, collator=None, restore_state=True, args=None):
     """Get the training loader"""
-    args = get_args()
+    if args is None:
+        args = get_args()
     from importlib.metadata import version
     if version('megatron-energon') < "7.0.0":
         train_dataloader = energon.get_savable_loader(train_ds)

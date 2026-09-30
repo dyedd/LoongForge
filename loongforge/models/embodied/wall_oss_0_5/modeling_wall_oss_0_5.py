@@ -44,9 +44,11 @@ def _load_safetensors_dir(path: str | os.PathLike[str]) -> dict[str, torch.Tenso
     return merged
 
 
-def _resolve_wall_oss_paths_from_training_args() -> tuple[str, str, str, str]:
+def _resolve_wall_oss_paths_from_training_args(training_args=None) -> tuple[str, str, str, str]:
     """Resolve wall oss paths from training args."""
-    training_args = get_training_args()
+    if training_args is None:
+        from loongforge.engines.torch.global_vars import get_training_args
+        training_args = get_training_args()
     pretrained_checkpoint = training_args.pretrained_checkpoint
     tokenizer_path = training_args.tokenizer_path
     if not pretrained_checkpoint:
@@ -224,14 +226,15 @@ class WallOss05Model(nn.Module):
         _load_wall_checkpoint(self.model, wall_checkpoint_path)
         self._maybe_apply_ddp_mix_precision()
 
-    def _maybe_apply_ddp_mix_precision(self) -> None:
+    def _maybe_apply_ddp_mix_precision(self, training_args=None) -> None:
         """Apply model-owned mixed precision when training with DDP + bf16.
 
         Wall-OSS-0.5 keeps selected leaves (norms, action preprocessor) in
         fp32 while casting compute modules to bf16. Under FSDP the mixed
         precision policy owns dtypes, so this only runs for DDP.
         """
-        training_args = get_training_args()
+        if training_args is None:
+            training_args = get_training_args()
         if getattr(training_args, "distributed_strategy", None) != "ddp":
             return
         if str(getattr(training_args, "dtype", "")).lower() not in {"bfloat16", "bf16"}:
@@ -254,8 +257,11 @@ class WallOss05Model(nn.Module):
         offload_policy=None,
         reshard_after_forward: bool = True,
         use_dmuon: bool = False,
+        model_config=None,
     ):
         """Convert to fsdp."""
+        if model_config is None:
+            model_config = get_model_config()
         wrapped = self.model.convert_to_fsdp(
             mesh=mesh,
             mp_policy=mp_policy,
@@ -263,7 +269,7 @@ class WallOss05Model(nn.Module):
             reshard_after_forward=reshard_after_forward,
             use_dmuon=use_dmuon,
             norm_forward_prefetch_distance=getattr(
-                get_model_config(),
+                model_config,
                 "norm_forward_prefetch_distance",
                 0,
             ),

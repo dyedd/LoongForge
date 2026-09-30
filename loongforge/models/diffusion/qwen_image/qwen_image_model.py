@@ -42,11 +42,14 @@ class QwenImageModel(VisionModule):
         max_sequence_length: int = 0,
         pre_process: bool = True,
         post_process: bool = True,
+        args=None,
         **kwargs,
     ):
         super().__init__(config=config)
         self.config = config
-        self.args = get_args()
+        if args is None:
+            args = get_args()
+        self.args = args
         self.pre_process = pre_process
         self.post_process = post_process
         self.hidden_size = config.hidden_size

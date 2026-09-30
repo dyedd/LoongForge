@@ -36,8 +36,11 @@ class MultiAccModules:
     TELinear: Any = None
 
 
-def _gpu_backend_transformer_layer_modules() -> MultiAccModules:
+def _gpu_backend_transformer_layer_modules(args=None) -> MultiAccModules:
     """define gpu transformer layer modules"""
+    if args is None:
+        args = get_args()
+
     from megatron.core.tensor_parallel.layers import (
         ColumnParallelLinear,
         RowParallelLinear,
@@ -58,8 +61,6 @@ def _gpu_backend_transformer_layer_modules() -> MultiAccModules:
         apply_rotary_pos_emb,
     )
     from loongforge.models.common.local_layers.local_norm import LocalNorm
-
-    args = get_args()  # Phase 2C: replace get_args() with explicit parameter
 
     return MultiAccModules(
         # dense linear

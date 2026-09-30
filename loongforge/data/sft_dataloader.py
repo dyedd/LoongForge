@@ -17,7 +17,7 @@ from megatron.core.packed_seq_params import PackedSeqParams
 
 from megatron.legacy.data.data_samplers import MegatronPretrainingRandomSampler
 
-from loongforge.engines.mcore import get_args, get_model_config, get_tokenizer, constants
+from loongforge.engines.mcore import constants
 from loongforge.data import DataCollatorForSupervisedDataset
 from loongforge.engines.mcore.tokenizer import AutoTokenizerFromHF
 from loongforge.engines.mcore.checkpointing import get_checkpoint_name, read_tracker_iteration
@@ -43,11 +43,15 @@ def _cyclic_iter(iter):
 
 
 def build_sft_data_collator(
-    cls: Type[DataCollatorForSupervisedDataset], **kwargs
+    cls: Type[DataCollatorForSupervisedDataset], args=None, tokenizer=None, **kwargs
 ) -> DataCollatorForSupervisedDataset:
     """build data collator for sft"""
-    args = get_args()
-    tokenizer = get_tokenizer()
+    if args is None:
+        from loongforge.engines.mcore import get_args
+        args = get_args()
+    if tokenizer is None:
+        from loongforge.engines.mcore import get_tokenizer
+        tokenizer = get_tokenizer()
 
     assert isinstance(
         tokenizer, AutoTokenizerFromHF
@@ -202,7 +206,7 @@ class SavableCyclicIteratorWithPreprocessor:
         return self.iterable.load_state(state)
 
 
-def build_savable_dataloader_iter(dataloader, preprocessor=None):
+def build_savable_dataloader_iter(dataloader, preprocessor=None, args=None):
     """Build a savable cyclic iterator with optional preprocessor.
 
     If args.dataloader_save is set, returns a SavableCyclicIteratorWithPreprocessor
@@ -220,7 +224,8 @@ def build_savable_dataloader_iter(dataloader, preprocessor=None):
     """
     from loongforge.engines.mcore import get_args, print_rank_0
 
-    args = get_args()
+    if args is None:
+        args = get_args()
 
     # Use args.dataloader_save if set; fall back to args.save so VLA trainers
     # that set dataloader_save = args.save in _ensure_megatron_defaults still
@@ -296,12 +301,15 @@ def _build_cylic_iterator(
     dataset: Union["Dataset", "IterableDataset"],
     consumed_samples: int,
     data_collator: DataCollatorForSupervisedDataset,
+    args=None,
 ):
     """build data iterator for sft"""
     if dataset is None:
         return None
 
-    args = get_args()
+    if args is None:
+        from loongforge.engines.mcore import get_args
+        args = get_args()
 
     _dataloader_kwargs = {}
     if args.sft_data_streaming:
@@ -381,9 +389,12 @@ def build_sft_cyclic_iterators(
     valid_ds: Optional[Union["Dataset", "IterableDataset"]],
     test_ds: Optional[Union["Dataset", "IterableDataset"]],
     data_collator: Optional[DataCollatorForSupervisedDataset],
+    args=None,
 ):
     """build data iterators for sft"""
-    args = get_args()
+    if args is None:
+        from loongforge.engines.mcore import get_args
+        args = get_args()
     train_iter = _build_cylic_iterator(
         train_ds, args.consumed_train_samples, data_collator
     )
@@ -394,9 +405,11 @@ def build_sft_cyclic_iterators(
     return train_iter, valid_iter, test_iter
 
 
-def _get_attention_mask(attention_mask: torch.Tensor) -> torch.Tensor:
+def _get_attention_mask(attention_mask: torch.Tensor, args=None) -> torch.Tensor:
     """create attention mask"""
-    args = get_args()
+    if args is None:
+        from loongforge.engines.mcore import get_args
+        args = get_args()
     current_device = attention_mask.device
     batch_size, seq_length = attention_mask.shape
 

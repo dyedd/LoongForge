@@ -13,7 +13,7 @@ from transformers import AutoModel
 
 from megatron.core.transformer.spec_utils import import_module
 from loongforge.engines.mcore import (
-    get_args, get_model_config, print_rank_0
+    print_rank_0
 )
 from loongforge.models.common import BaseMegatronLanguageModule
 
@@ -23,6 +23,8 @@ def llm_model_provider(
     post_process: bool = True,
     parallel_output: bool = True,
     vp_stage: Optional[int] = None,
+    args=None,
+    config=None,
 ):
     """Generic LLM model provider.
     
@@ -34,9 +36,12 @@ def llm_model_provider(
     Returns:
         The corresponding LLM model.
     """
-    args = get_args()
-
-    config = get_model_config()
+    if args is None:
+        from loongforge.engines.mcore import get_args
+        args = get_args()
+    if config is None:
+        from loongforge.engines.mcore import get_model_config
+        config = get_model_config()
 
     print_rank_0(f"Building {config.model_type} model...")
 

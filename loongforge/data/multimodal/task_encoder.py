@@ -200,7 +200,7 @@ _IMAGE_EXTS: Tuple[str, ...] = (".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"
 _VIDEO_EXTS: Tuple[str, ...] = (".mp4", ".avi", ".mov", ".webm")
 
 
-def _load_vlm_tags(section: Optional[str] = None) -> Dict[str, any]:
+def _load_vlm_tags(section: Optional[str] = None, args=None) -> Dict[str, any]:
     """Load and cache the VLM message tags from the dataset config file.
 
     Reads the ``tags`` block under the given *section* in ``--sft-dataset-config``.
@@ -228,7 +228,8 @@ def _load_vlm_tags(section: Optional[str] = None) -> Dict[str, any]:
             function_tag: function
     """
     global _vlm_tags_cache
-    args = get_args()
+    if args is None:
+        args = get_args()
     if section is None:
         section = args.sft_dataset[0] if args.sft_dataset else "multimodal"
 
@@ -719,9 +720,10 @@ def cooker_packed_caption(sample: dict):
         )
 
 
-def cooker_default(sample: dict):
+def cooker_default(sample: dict, args=None):
     """Fallback cooker when no subflavor matches, selected by user-defined sample_type."""
-    args = get_args()
+    if args is None:
+        args = get_args()
     if args.sample_type == "multi_mix_qa":
         return cooker_multi_mix_qa(sample)
     elif args.sample_type == "chat_mix":
@@ -754,13 +756,17 @@ class BaseTaskEncoder(DefaultTaskEncoder[BaseTaskSample, BaseTaskSamplePacked, B
         Cooker(cooker_default,)
     ]
 
-    def __init__(self):
+    def __init__(self, args=None, tokenizer=None):
         super().__init__()
 
-        self.args = get_args()
+        if args is None:
+            args = get_args()
+        self.args = args
 
         self.packer = Packer(self.args)
-        self.tokenizer = get_tokenizer()
+        if tokenizer is None:
+            tokenizer = get_tokenizer()
+        self.tokenizer = tokenizer
         self.is_packing_enabled = self.args.packing_pretrain_data or self.args.packing_sft_data
         self.max_packed_tokens = self.args.max_packed_tokens
         self.num_images_expected = self.args.num_images_expected

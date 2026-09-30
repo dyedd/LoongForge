@@ -10,10 +10,9 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 from .omni_combination_model import OmniCombinationModel
-from loongforge.engines.mcore import get_args
 from megatron.core import mpu
 import torch
-from loongforge.engines.mcore import build_transformer_config, get_model_config
+from loongforge.engines.mcore import build_transformer_config
 from loongforge.models.common import BaseModelConfig
 
 
@@ -30,6 +29,8 @@ def omni_model_provider(
     post_process: bool = True,
     parallel_output: bool = True,
     vp_stage: Optional[int] = None,
+    args=None,
+    model_config=None,
 ) -> OmniCombinationModel:
     """
     Construct and return an Omni combination model instance.
@@ -51,8 +52,12 @@ def omni_model_provider(
         - Supports encoder pipeline parallel processing
         - Includes language model related parameter configuration
     """
-    args = get_args()
-    model_config = get_model_config()
+    if args is None:
+        from loongforge.engines.mcore import get_args
+        args = get_args()
+    if model_config is None:
+        from loongforge.engines.mcore import get_model_config
+        model_config = get_model_config()
     # check_model_config(model_config)
     # build_transformer_config(args)
     # FIXME: Need to handle when model_type is encoder_and_decoder

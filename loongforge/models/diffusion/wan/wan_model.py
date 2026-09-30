@@ -214,11 +214,14 @@ class WanModel(VisionModule):
         rotary_percent: float = 1.0,
         rotary_base: int = 10000,
         seq_len_interpolation_factor: Optional[float] = None,
+        args=None,
     ):
         super().__init__(config=config)
         self.require_clip_embedding = config.require_clip_embedding
         self.require_vae_embedding = require_vae_embedding
-        self.args = get_args()
+        if args is None:
+            args = get_args()
+        self.args = args
         self.pre_process = pre_process
         self.post_process = post_process
         self.freq_dim = config.freq_dim

@@ -69,9 +69,10 @@ def wan_rope_apply(
     return x_out.clone(memory_format=torch.contiguous_format)
 
 
-def send_batch(batch, broadcast):
+def send_batch(batch, broadcast, args=None):
     """send batch"""
-    args = get_args()
+    if args is None:
+        args = get_args()
     video_shape = torch.tensor(batch["latents"].shape, dtype=torch.int64).cuda(
         non_blocking=True
     )
@@ -114,9 +115,10 @@ def send_batch(batch, broadcast):
     return batch
 
 
-def receive_batch(broadcast):
+def receive_batch(broadcast, args=None):
     """receive batch"""
-    args = get_args()
+    if args is None:
+        args = get_args()
     device = torch.cuda.current_device()
     # receive video
     video_shape = torch.empty(5, dtype=torch.int64, device=device)

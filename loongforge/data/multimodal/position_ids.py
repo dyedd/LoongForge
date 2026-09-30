@@ -21,6 +21,7 @@ def get_rope_index_qwen3vl(batch_data, model_config=None):
     """Different from the original implementation, Qwen3VLMoe use timestamps rather than absolute time position ids."""
     
     if model_config is None:
+                from loongforge.engines.mcore import get_model_config
                 model_config = get_model_config()
     spatial_merge_size = 2
     mrope_position_deltas = []
@@ -29,8 +30,8 @@ def get_rope_index_qwen3vl(batch_data, model_config=None):
     video_grid_thw = batch_data.get("video_grid_thw", None)
     attention_mask = batch_data.get("attn_mask", None)
     VISION_START_TOKEN_ID = getattr(
-        getattr(model_config, "image_encoder", None), 
-        "vision_start_token_id", 
+        getattr(model_config, "image_encoder", None),
+        "vision_start_token_id",
         151652
     )
     IMAGE_TOKEN_ID = getattr(
@@ -164,6 +165,7 @@ def get_rope_index_internvl(batch_data, model_config=None):
     attention_mask = batch_data.get("attn_mask", None)
     x = batch_data.get("tokens", None)
     if model_config is None:
+                from loongforge.engines.mcore import get_model_config
                 model_config = get_model_config()
     VISION_TOKEN_TYPE = model_config.get("vision_token_type", 1)
     LANGUAGE_TOKEN_TYPE = model_config.get("language_token_type", 0)
@@ -193,6 +195,7 @@ def get_rope_index_internvl(batch_data, model_config=None):
 def get_mrope_index(batch_data, model_config=None) -> Tuple[torch.Tensor, torch.Tensor]:
     """Slightly modified from Qwen2_5VLForConditionalGeneration.get_rope_index"""
     if model_config is None:
+                from loongforge.engines.mcore import get_model_config
                 model_config = get_model_config()
     spatial_merge_size = 2
     mrope_position_deltas = []

@@ -25,7 +25,6 @@ import torch.nn.functional as F
 import numpy as np
 import logging
 from typing import Optional
-from megatron.training import get_args
 from transformers import AutoProcessor
 from megatron.core.packed_seq_params import PackedSeqParams
 from loongforge.models.common import BaseMegatronVisionModule

@@ -4,14 +4,15 @@
 """LoongForge Embodied training entry."""
 
 from loongforge.engines.torch.parser import parse_train_args
-from loongforge.engines.torch.trainers import build_model_trainer
+from loongforge.training.registry import resolve_torch_trainer
+from loongforge.training.torch_runner import TorchRunner
 
 
 def main():
-    """Parse configs, build the trainer, and start the training loop."""
+    """Parse configs, build the runner, and start the training loop."""
     training_args, model_cfg, data_cfg = parse_train_args()
-    trainer = build_model_trainer(training_args, model_cfg, data_cfg)
-    trainer.train()
+    method, build_optimization = resolve_torch_trainer(training_args.trainer_type)
+    TorchRunner(training_args, model_cfg, data_cfg, method, build_optimization(training_args)).train()
 
 
 if __name__ == "__main__":

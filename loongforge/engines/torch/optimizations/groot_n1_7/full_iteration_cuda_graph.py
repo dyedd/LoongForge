@@ -15,7 +15,7 @@ import torch
 from transformers.feature_extraction_utils import BatchFeature
 
 from loongforge.engines.torch.distributed.utils import unwrap_model
-from loongforge.engines.torch.utils.utils import resolve_dtype
+from loongforge.engines.torch.initialize import resolve_dtype
 logger = logging.getLogger(__name__)
 
 

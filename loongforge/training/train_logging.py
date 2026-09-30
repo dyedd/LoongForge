@@ -22,6 +22,61 @@ logger = logging.getLogger(__name__)
 
 
 # ═══════════════════════════════════════════════════════════════════
+# Logging setup and stage helpers (moved from engines/torch/utils/utils.py)
+# ═══════════════════════════════════════════════════════════════════
+
+
+def setup_logging(output_dir: str, rank: int):
+    """Configure logging: rank0 gets INFO + file handler, others get WARNING only."""
+    from datetime import datetime
+    level = logging.INFO if rank == 0 else logging.WARNING
+
+    sh = logging.StreamHandler()
+    sh.setLevel(level)
+    sh.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    )
+    handlers = [sh]
+
+    if rank == 0 and output_dir:
+        log_dir = os.path.join(output_dir, "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, f"train_{datetime.now():%Y%m%d_%H%M%S}.log")
+        fh = logging.FileHandler(log_file, encoding="utf-8")
+        fh.setLevel(logging.INFO)
+        fh.setFormatter(
+            logging.Formatter("[%(asctime)s][%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+        )
+        handlers.append(fh)
+
+    logging.basicConfig(level=level, handlers=handlers, force=True)
+
+
+@contextmanager
+def log_stage(
+    tag: str,
+    start_msg: str = "",
+    end_msg: str = "done in {elapsed}",
+    log: Optional[logging.Logger] = None,
+):
+    """Context manager that wraps a setup stage with start/end logs + timing."""
+    from loongforge.engines.torch.distributed.utils import is_rank_zero
+
+    out = log or logger
+    is_main = is_rank_zero()
+
+    if is_main and start_msg:
+        out.info(f"[{tag}] {start_msg}")
+    t0 = time.perf_counter()
+    try:
+        yield
+    finally:
+        if is_main and end_msg:
+            elapsed = f"{time.perf_counter() - t0:.2f}s"
+            out.info(f"[{tag}] {end_msg.format(elapsed=elapsed)}")
+
+
+# ═══════════════════════════════════════════════════════════════════
 # Config formatting utilities
 # ═══════════════════════════════════════════════════════════════════
 

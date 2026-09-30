@@ -84,7 +84,7 @@ if _TEFusedAdam is not None:
                     continue
                 beta1, beta2 = group["betas"]
                 if self.capturable:
-                    from loongforge.engines.torch.trainers.custom.groot_n1_7.groot_fused_adamw import (
+                    from loongforge.engines.torch.optimizations.groot_n1_7.groot_fused_adamw import (
                         capturable_grad_scaled_step,
                         capturable_step,
                     )
@@ -113,7 +113,7 @@ if _TEFusedAdam is not None:
                             eps=group["eps"], weight_decay=group["weight_decay"],
                         )
                 else:
-                    from loongforge.engines.torch.trainers.custom.groot_n1_7.groot_fused_adamw import (
+                    from loongforge.engines.torch.optimizations.groot_n1_7.groot_fused_adamw import (
                         eager_step,
                     )
 

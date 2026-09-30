@@ -45,7 +45,7 @@ from loongforge.models.embodied.cosmos3.data_and_condition import GenerationData
 from loongforge.models.embodied.cosmos3.unified_mot import Qwen3VLMoTConfig, Qwen3VLTextForCausalLM
 from loongforge.models.embodied.cosmos3.wan2pt2_vae_4x16x16 import Wan2pt2VAEInterface
 from loongforge.data.embodied.transforms.cosmos3.cosmos3_preprocessor import Cosmos3Batch
-from loongforge.engines.torch.utils.utils import resolve_dtype
+from loongforge.engines.torch.initialize import resolve_dtype
 
 logger = logging.getLogger(__name__)
 

@@ -94,42 +94,46 @@ def resolve_method(model_family: str, training_phase: str):
 
 
 # ---------------------------------------------------------------------------
-# Torch engine: --trainer-type -> (module_path, class_name)
-# Mirrors engines/torch/trainers/trainer_builder.py._TRAINER_CLASSES without
-# importing torch at module level.
+# Torch engine: --trainer-type -> (method_module, optimization_package)
+# All old values stay valid. Lazy imports; no torch at module level.
 # ---------------------------------------------------------------------------
 
-TORCH_TRAINER_REGISTRY: Dict[str, Tuple[str, str]] = {
-    "FinetuneTrainer": (
-        "loongforge.engines.torch.trainers.supervised.finetune_trainer",
-        "FinetuneTrainer",
-    ),
-    "GrootN1d6Trainer": (
-        "loongforge.engines.torch.trainers.custom.groot_n1_6",
-        "GrootN1d6Trainer",
-    ),
-    "LingBotFinetuneTrainer": (
-        "loongforge.engines.torch.trainers.custom.lingbot_va",
-        "LingBotFinetuneTrainer",
-    ),
-    "GrootN1d7Trainer": (
-        "loongforge.engines.torch.trainers.custom.groot_n1_7",
-        "GrootN1d7Trainer",
-    ),
+TORCH_TRAINER_TYPES: Dict[str, Tuple[str, str | None]] = {
+    "FinetuneTrainer": ("sft_embodied", None),
+    "GrootN1d6Trainer": ("sft_embodied", "groot_n1_6"),
+    "GrootN1d7Trainer": ("sft_embodied", "groot_n1_7"),
+    "LingBotFinetuneTrainer": ("sft_lingbot_va", "lingbot_va"),
 }
+
+# ponytail: legacy TORCH_TRAINER_REGISTRY removed — trainers/ directory deleted
 
 
 def resolve_torch_trainer(trainer_type: str):
-    """Lazily import and return the Torch trainer *class*.
+    """Lazily import and return the method module + optimization factory.
 
-    Raises ValueError for unknown --trainer-type values.
+    Returns ``(method_module, build_optimization_callable)``.
+    Raises ValueError for unknown --trainer-type values, preserving the
+    original error messages from trainer_builder.py.
     """
-    entry = TORCH_TRAINER_REGISTRY.get(trainer_type)
+    if not trainer_type:
+        raise ValueError(
+            "--trainer-type is required. "
+            f"Available: {sorted(TORCH_TRAINER_TYPES.keys())}"
+        )
+
+    entry = TORCH_TRAINER_TYPES.get(trainer_type)
     if entry is None:
         raise ValueError(
-            f"Unknown --trainer-type {trainer_type!r}. "
-            f"Available: {sorted(TORCH_TRAINER_REGISTRY.keys())}"
+            f"Unknown --trainer-type '{trainer_type}'. "
+            f"Available: {sorted(TORCH_TRAINER_TYPES.keys())}"
         )
-    module_path, class_name = entry
-    mod = importlib.import_module(module_path)
-    return getattr(mod, class_name)
+
+    method_name, opt_name = entry
+    method = importlib.import_module(f"loongforge.training.methods.{method_name}")
+    if opt_name is None:
+        from loongforge.engines.torch.train_step import TorchOptimization
+        return method, lambda _args: TorchOptimization()
+    opt_module = importlib.import_module(
+        f"loongforge.engines.torch.optimizations.{opt_name}.optimization"
+    )
+    return method, opt_module.build_optimization

@@ -368,7 +368,7 @@ class DreamZeroPolicy(PreTrainedPolicy):
         if cpu_burn < 0:
             raise ValueError("DreamZeroConfig.train_rng_cpu_burn must be >= 0")
 
-        from loongforge.engines.torch.utils.utils import set_seed
+        from loongforge.engines.torch.initialize import set_seed
 
         set_seed(seed)
         if cpu_burn:
